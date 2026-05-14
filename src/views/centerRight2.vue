@@ -3,12 +3,12 @@
     <div class="bg-color-black">
       <div class="d-flex pt-2 pl-2">
         <span style="color: #5cd9e8">
-          <icon name="align-left"></icon>
+          <icon name="align-left"></icon> <!--文字前的黑色小图标-->
         </span>
         <span class="fs-xl text mx-2" style="font-size: medium">资源概况</span>
       </div>
       <div class="d-flex jc-center body-box" style="margin-top: 0">
-        <dv-capsule-chart :config="config" ref="capsule" style="width: 100%; height: 4.5rem" />
+        <dv-capsule-chart :config="config" ref="capsule" style="width: 100%; height: 5.7rem" />
         <!-- <dv-conical-column-chart :config="config" ref="capsule" style="width: 100%; height: 2rem" /> -->
         <!-- <centreLeft1Chart ref="centreLeft1Chart" /> -->
 
@@ -184,8 +184,8 @@ export default {
   min-width: 3.75rem;
   border-radius: 0.0625rem;
   .bg-color-black {
-    padding: 0.0625rem;
-    height: 5.0625rem;
+    padding: 0.24rem;
+    height: 6.31rem;// 纯色背景高度
     border-radius: 0.125rem;
   }
   .text {
