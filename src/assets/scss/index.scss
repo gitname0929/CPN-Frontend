@@ -90,9 +90,31 @@
       margin-top: 0.2rem;
       display: flex;
       flex-direction: column;
+	  
+	  
+	  /* 关键修改：将第一行从5列改为4列，每列等宽 */
+	  .content-box {
+	    display: grid;
+	    grid-template-columns: repeat(4, 1fr);
+	    //gap: 0.125rem; /* 增加模块间距 */
+	   }
+	  /* 底部两列保持不变 */
+	  .bototm-box {
+	    margin-top: 0.125rem;
+	    display: grid;
+	    grid-template-columns: repeat(2, 50%);
+	    //gap: 0.125rem;
+		}
+	  //新增box-itemx样式
+	  .box-item {
+	    background-color: rgba(19, 25, 47, 0.6);
+	    border: 1px solid rgba(0, 240, 255, 0.2);
+	    padding: 0.1rem;
+	    min-height: 2.5rem; /* 确保模块有最小高度 */
+	  }
 
       //下方区域的布局
-      .content-box {
+      /*.content-box {
         display: grid;
         grid-template-columns: 2fr 3fr 5fr 3fr 2fr;
       }
@@ -102,7 +124,7 @@
         margin-top: 0.125rem;
         display: grid;
         grid-template-columns: repeat(2, 50%);
-      }
+      }  */
     }
   }
 }

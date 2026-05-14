@@ -57,28 +57,38 @@
         <div class="body-box">
           <!-- 第三行 数据  todo 数据框之间的间隔需要修改 现在没有铺满屏幕宽度-->  
           <div class="content-box">
+			<!--原有响应情况 中间左1-->
             <div>
               <dv-border-box-12>
                 <centerLeft1 ref="centerLeft1" />
               </dv-border-box-12>
             </div>
+			<!--原有雷达图
             <div>
               <dv-border-box-12>
                 <centerLeft2 />
               </dv-border-box-12>
-            </div>
-            <!-- 中间 -->
+            </div>-->
+			<!--新增课题选择  中间左2-->
+			<div>
+              <dv-border-box-12>
+                <topicSelector />
+              </dv-border-box-12>
+			</div>
+            <!-- 中间 原有算力地图 
             <div>
               <dv-border-box-12>
                 <centerMap ref="resourceMap" @parent-event="doRefreshSelect"/>
               </dv-border-box-12>
-            </div>
-            <!-- 中间 -->
+            </div>-->
+			
+            <!--原有资源进度条 中间右1-->
             <div>
               <dv-border-box-12>
                 <centerRight2 ref="progressChart"/>
               </dv-border-box-12>
             </div>
+			<!--原有集群选择 中间右2-->
             <div>
               <dv-border-box-13>
                 <centerRight1 ref="card" @parent-event="doRefreshChart"/>
@@ -88,11 +98,17 @@
 
           <!-- 第四行数据 -->
           <div class="bototm-box">
-            <dv-border-box-12>
+            <!--原有历史数据展示
+			<dv-border-box-12>
               <bottomLeft ref="InfoChart"/>
-            </dv-border-box-12>
+            </dv-border-box-12>-->
+			<!--新增课题结果展示 下左-->
+			<dv-border-box-12>
+				<topicResult />
+			</dv-border-box-12>
 
-            <dv-border-box-12>
+            <!--原有集群资源展示 下右-->
+			<dv-border-box-12>
               <bottomRight ref="NodeInfo"/>
             </dv-border-box-12>
           </div>
@@ -104,12 +120,14 @@
 
 <script>
 import centerLeft1 from "./centerLeft1";
-import centerLeft2 from "./centerLeft2";
-import centerMap from "./centerMap.vue";
+// import centerLeft2 from "./centerLeft2";
+// import centerMap from "./centerMap.vue";
 import centerRight1 from "./centerRight1";
 import centerRight2 from "./centerRight2";
-import bottomLeft from "./bottomLeft";
+// import bottomLeft from "./bottomLeft";
 import bottomRight from "./bottomRight.vue";
+import topicSelector from './topicSelector.vue';
+import topicResult from './topicResult.vue';
 export default {
   data() {
     return {
@@ -120,12 +138,15 @@ export default {
   },
   components: {
     centerLeft1,
-    centerLeft2,
-    centerMap,
+    // centerLeft2,
+    // centerMap,
     centerRight1,
     centerRight2,
-    bottomLeft,
+    // bottomLeft,
     bottomRight,
+	// 替换
+	topicSelector,
+	topicResult,
   },
   mounted() {
     this.cancelLoading();
