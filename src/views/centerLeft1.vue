@@ -145,7 +145,7 @@ export default {
   .chart-box {
     margin-top: 0.2rem;
     width: 2.125rem;
-    height: 2.125rem;
+    height: 5.125rem;
 
     .active-ring-name {
       padding-top: 0.125rem;

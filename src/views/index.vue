@@ -28,7 +28,7 @@
 
         <!-- 第二行 时间-->
         <div class="d-flex jc-between px-2">
-          <div class="d-flex" style="width: 40%">
+          <div class="d-flex" style="width: 100%">
             <div
               class="react-right ml-4"
               style="width: 6.25rem; text-align: left;background-color: #0f1325;"

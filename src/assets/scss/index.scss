@@ -15,7 +15,11 @@
     .title {
       position: relative;
       width: 6.25rem;
-      text-align: center;
+      // 修改点：使用 flex 布局确保标题内容垂直居中
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      // 替换 text-align: center;
       background-size: cover;
       background-repeat: no-repeat;
 
@@ -25,6 +29,8 @@
         bottom: 0;
         left: 50%;
         transform: translate(-50%);
+        // 修改点：增加标题文字本身的垂直居中微调
+        line-height: 1;
       }
 
       .title-bototm {
@@ -35,13 +41,17 @@
       }
     }
 
-    // 平行四边形
+    // 平行四边形-左
     .react-left {
       cursor: pointer;
       font-size: 0.225rem;
       width: 3.75rem;
       height: 0.625rem;
-      line-height: 0.625rem;
+    // 修改点：移除 line-height，改用 flex 垂直居中
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      // 替换 line-height: 0.625rem;
       text-align: center;
       transform: skewX(-45deg);
 
@@ -58,15 +68,21 @@
       .text {
         display: inline-block;
         transform: skewX(45deg);
+		// 修改点：微调文字垂直位置
+        line-height: 1;
       }
     }
-
+    // 平行四边形 右
     .react-right {
       cursor: pointer;
       font-size: 0.225rem;
       width: 3.75rem;
       height: 0.625rem;
-      line-height: 0.625rem;
+      // 修改点：移除 line-height，改用 flex 垂直居中
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      //替换 line-height: 0.625rem;
       text-align: center;
       transform: skewX(45deg);
 
@@ -83,6 +99,8 @@
       .text {
         display: inline-block;
         transform: skewX(-45deg);
+		// 修改点：微调文字垂直位置
+		line-height: 1;
       }
     }
 
@@ -128,3 +146,36 @@
     }
   }
 }
+
+// 之后 新增：课题选择器容器样式（大屏风格）
+.topic-selector {
+  padding: 0.15rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+// 新增：大屏风格表格样式
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.14rem;
+  th {
+    background-color: rgba(0, 240, 255, 0.15);
+    color: #00f0ff;
+    padding: 0.08rem 0.1rem;
+    border: 1px solid rgba(0, 240, 255, 0.3);
+    text-align: center;
+  }
+  td {
+    padding: 0.06rem 0.1rem;
+    border: 1px solid rgba(0, 240, 255, 0.15);
+    text-align: center;
+    color: #d3d6dd;
+  }
+  tr:hover td {
+    background-color: rgba(0, 240, 255, 0.05);
+  }
+}
+
