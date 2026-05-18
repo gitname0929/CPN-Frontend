@@ -108,21 +108,55 @@
       margin-top: 0.2rem;
       display: flex;
       flex-direction: column;
-	  
-	  
+		
+		// 【关键修改】新增左右两列主布局容器
+		.main-layout {
+		  display: grid;
+		  grid-template-columns: 1fr 1fr; // 左右各占一半
+		  gap: 0.125rem;
+		  min-height: calc(100vh - 2rem); // 确保填满可视区域
+		}
+  
+		// 左侧：课题图表区
+		.left-panel {
+		  display: flex;
+		  flex-direction: column;
+		}
+  
+		// 右侧：集群指标区
+		.right-panel {
+		  display: grid;
+		  grid-template-rows: auto 1fr; // 第一行自适应，第二行占剩余空间
+		  gap: 0.125rem;
+		}
+  
+		// 右侧第一行：两个模块并排
+		.right-top-row {
+		  display: grid;
+		  grid-template-columns: 1fr 1fr;
+		  gap: 0.125rem;
+		}
+  
+		// 右侧第二行：单个模块
+		.right-bottom-row {
+		  display: flex;
+		  flex-direction: column;
+		}
+
 	  /* 关键修改：将第一行从5列改为4列，每列等宽 */
-	  .content-box {
+	  /*.content-box {
 	    display: grid;
 	    grid-template-columns: repeat(4, 1fr);
-	    //gap: 0.125rem; /* 增加模块间距 */
+	    //gap: 0.125rem; 
 	   }
-	  /* 底部两列保持不变 */
+	  底部两列保持不变 
 	  .bototm-box {
 	    margin-top: 0.125rem;
 	    display: grid;
 	    grid-template-columns: repeat(2, 50%);
 	    //gap: 0.125rem;
 		}
+		*/
 	  //新增box-itemx样式
 	  .box-item {
 	    background-color: rgba(19, 25, 47, 0.6);
@@ -131,7 +165,7 @@
 	    min-height: 2.5rem; /* 确保模块有最小高度 */
 	  }
 
-      //下方区域的布局
+      //原始下方区域的布局
       /*.content-box {
         display: grid;
         grid-template-columns: 2fr 3fr 5fr 3fr 2fr;

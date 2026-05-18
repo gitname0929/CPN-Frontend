@@ -54,27 +54,53 @@
           </div>
         </div>
 
-        <div class="body-box">
+        <!--第三行 靠右的再分上下两行-->
+		<div class="body-box">
           <!-- 第三行 数据  todo 数据框之间的间隔需要修改 现在没有铺满屏幕宽度-->  
-          <div class="content-box">
-			<!--原有响应情况 中间左1-->
+          <div class="main-layout"> <!--原有的两行风格content-box-->
+			<!--左侧：课题结果（占满左侧50%-->
+			<div class="left-panel">
+				<dv-border-box-12>
+					<topicResult />
+				</dv-border-box-12>
+			</div>
+			<!-- 右侧：集群指标区 -->
+			<div class="right-panel">
+			<!-- 右侧第一行：响应情况 + 资源概况 -->
+              <div class="right-top-row">
+				<dv-border-box-12>
+					<centerLeft1 ref="centerLeft1" />
+				</dv-border-box-12>
+				<dv-border-box-12>
+					<centerRight2 ref="progressChart"/>
+				</dv-border-box-12>
+              </div>
+			<!-- 右侧第二行：集群节点资源 -->
+              <div class="right-bottom-row">
+				<dv-border-box-12>
+					<bottomRight ref="NodeInfo"/>
+				</dv-border-box-12>
+              </div>
+			</div>
+          </div>
+			<!--原有响应情况 中间左1
             <div>
               <dv-border-box-12>
                 <centerLeft1 ref="centerLeft1" />
               </dv-border-box-12>
-            </div>
+            </div>-->
 			<!--原有雷达图
             <div>
               <dv-border-box-12>
                 <centerLeft2 />
               </dv-border-box-12>
             </div>-->
-			<!--新增课题选择  中间左2-->
+			<!--新增课题选择  中间左2
 			<div>
               <dv-border-box-12>
                 <topicSelector />
               </dv-border-box-12>
-			</div>
+			</div>-->
             <!-- 中间 原有算力地图 
             <div>
               <dv-border-box-12>
@@ -82,37 +108,37 @@
               </dv-border-box-12>
             </div>-->
 			
-            <!--原有资源进度条 中间右1-->
+            <!--原有资源进度条 中间右1
             <div>
               <dv-border-box-12>
                 <centerRight2 ref="progressChart"/>
               </dv-border-box-12>
-            </div>
-			<!--原有集群选择 中间右2-->
+            </div>-->
+			<!--原有集群选择 中间右2
             <div>
               <dv-border-box-13>
                 <centerRight1 ref="card" @parent-event="doRefreshChart"/>
               </dv-border-box-13>
-            </div>
+            </div>-->
           </div>
 
           <!-- 第四行数据 -->
-          <div class="bototm-box">
+        <!--<div class="bototm-box">-->
             <!--原有历史数据展示
 			<dv-border-box-12>
               <bottomLeft ref="InfoChart"/>
             </dv-border-box-12>-->
-			<!--新增课题结果展示 下左-->
+			
+			<!--新增课题结果展示 下左
 			<dv-border-box-12>
 				<topicResult />
-			</dv-border-box-12>
+			</dv-border-box-12>-->
 
-            <!--原有集群资源展示 下右-->
+            <!--原有集群资源展示 下右
 			<dv-border-box-12>
               <bottomRight ref="NodeInfo"/>
-            </dv-border-box-12>
-          </div>
-        </div>
+            </dv-border-box-12>-->
+        <!--</div>-->
       </div>
     </dv-full-screen-container>
   </div>
@@ -120,13 +146,13 @@
 
 <script>
 import centerLeft1 from "./centerLeft1";
-// import centerLeft2 from "./centerLeft2";
-// import centerMap from "./centerMap.vue";
-import centerRight1 from "./centerRight1";
+// import centerLeft2 from "./centerLeft2";雷达
+// import centerMap from "./centerMap.vue";算力地图
+//import centerRight1 from "./centerRight1";集群选择
 import centerRight2 from "./centerRight2";
-// import bottomLeft from "./bottomLeft";
+// import bottomLeft from "./bottomLeft";历史数据图
 import bottomRight from "./bottomRight.vue";
-import topicSelector from './topicSelector.vue';
+//import topicSelector from './topicSelector.vue';课题选择
 import topicResult from './topicResult.vue';
 export default {
   data() {
@@ -140,12 +166,12 @@ export default {
     centerLeft1,
     // centerLeft2,
     // centerMap,
-    centerRight1,
+    //centerRight1,
     centerRight2,
     // bottomLeft,
     bottomRight,
 	// 替换
-	topicSelector,
+	//topicSelector,
 	topicResult,
   },
   mounted() {
