@@ -185,7 +185,7 @@ export default {
   border-radius: 0.0625rem;
   .bg-color-black {
     padding: 0.24rem;
-    height: 6.31rem;// 纯色背景高度
+    height: 4.9rem;// 纯色背景高度
     border-radius: 0.125rem;
   }
   .text {
