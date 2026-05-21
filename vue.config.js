@@ -4,12 +4,8 @@ module.exports = {
     // 配置跨域
     proxy: {
       '/api':{
-        target: 'http://100.127.132.2:8080', //100.127.132.2 localhost
+        target: 'http://127.0.0.1:8099',
         changeOrigin: true,
-        pathRewrite: {
-          // 路径重写，
-          "^/api": "" // 替换target中的请求地址
-        }
       }
     }
   },

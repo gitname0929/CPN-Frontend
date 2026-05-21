@@ -68,7 +68,7 @@ export default {
         clusterInfo: [],
       },
       clusterOptions: [
-        //{name: "kubernetes00"},
+        {name: "k3s-cluster"},
       ],
       clickedPosition: "未选择",
       clusterIpPort: "xx.xx.xx.xx:xx",
@@ -163,7 +163,7 @@ export default {
   height: 5.125rem;
   min-width: 3.75rem;
   border-radius: 0.0625rem;
-  
+
   .bg-color-black {
     height: 6.31rem;
     border-radius: 0.125rem;

@@ -7,13 +7,20 @@
         </span>
         <span class="fs-xl text mx-2" style="font-size: medium">资源概况</span>
       </div>
-      <div class="d-flex jc-center body-box" style="margin-top: 0">
-        <dv-capsule-chart :config="config" ref="capsule" style="width: 100%; height: 5.7rem" />
-        <!-- <dv-conical-column-chart :config="config" ref="capsule" style="width: 100%; height: 2rem" /> -->
-        <!-- <centreLeft1Chart ref="centreLeft1Chart" /> -->
-
-        <!-- ---------------------------------------- -->
-        <!-- <centreRight2Chart1></centreRight2Chart1> -->
+      <div class="body-box resource-list">
+        <div v-for="item in metrics" :key="item.name" class="resource-item">
+          <div class="resource-header">
+            <span class="resource-name">{{ item.name }}</span>
+            <span class="resource-value">{{ formatPercent(item.value) }}</span>
+          </div>
+          <div class="resource-track">
+            <div class="resource-fill" :style="{ width: `${clampPercent(item.value)}%` }"></div>
+          </div>
+        </div>
+        <div class="node-summary">
+          <span class="node-summary-label">节点数</span>
+          <span class="node-summary-value">{{ nodeCount }}</span>
+        </div>
       </div>
     </div>
   </div>
@@ -29,54 +36,21 @@ import handleErrorMessage from "@/utils/handleError";
 export default {
   data() {
     return {
-      config: {
-        data: [
-          {
-            name: "VCPU",
-            value: 0,
-          },
-          {
-            name: "存储",
-            value: 0,
-          },
-          {
-            name: "内存",
-            value: 0,
-          },
-          {
-            name: "节点数",
-            value: 0,
-          },
-        ],
-        unit: "%",
-        showValue: true,
-      },
-      VCPUOption: [
-          24,
-          16,
-          28,
-          26
+      metrics: [
+        {
+          name: "VCPU",
+          value: 0,
+        },
+        {
+          name: "存储",
+          value: 0,
+        },
+        {
+          name: "内存",
+          value: 0,
+        },
       ],
-      memoryOption: [
-          26,
-          24,
-          36,
-          30
-      ],
-      diskOption: [
-        10,
-        10,
-        10,
-        11
-      ],
-      bandOption: [
-          100,
-          100,
-          100,
-          100
-      ],
-      index: 0,
-      defaultCluster: "kubernetes",
+      nodeCount: 0,
     };
   },
   components: {
@@ -84,94 +58,45 @@ export default {
     // centreRight2Chart1,
   },
   mounted() {
-    //this.fetchSystemSum(this.defaultCluster);
-    //this.setTimer();
   },
   methods: {
-    setTimer() {
-      this.timer = setInterval(() => {
-        //this.fetchProposalSubmit(); //获取-系统情况分析数据
-        this.fetchSystemSum(); //获取-系统情况分析数据
-      }, 3000);
+    clampPercent(value) {
+      const numeric = Number(value);
+      if (!Number.isFinite(numeric)) {
+        return 0;
+      }
+      return Math.max(0, Math.min(100, numeric));
+    },
+    formatPercent(value) {
+      const numeric = Number(value);
+      if (!Number.isFinite(numeric)) {
+        return "0.0%";
+      }
+      return `${numeric.toFixed(1)}%`;
     },
     async updateClusterResource(selectCluster) {
-      // 这里可以添加获取集群信息的逻辑
-      // 例如：调用API获取集群信息
       console.log("获取集群信息: ", selectCluster);
       try {
-          const result = await getClusterResource(selectCluster);
-          let ClusterResourceData = result.data;
-          this.config.data[0].value = ClusterResourceData.cpuUsage;
-          this.config.data[1].value = ClusterResourceData.storageUsage;
-          this.config.data[2].value = ClusterResourceData.memoryUsage;
-          this.config.data[3].value = ClusterResourceData.nodeCount;
-          this.$refs.capsule.calcData();
-        } catch (error) {
-          handleErrorMessage(error);
-        }
-
-      // return await this.$http.get(`/api/cluster/${selectCluster}`);
-    },
-    async fetchSystemSum(selectCluster) {
-      console.log("----------------fetchSystemSum--------------------");
-      console.log(selectCluster);
-      this.config.data[0].value = this.VCPUOption[this.index];
-      this.config.data[1].value = this.diskOption[this.index];
-      this.config.data[2].value = this.memoryOption[this.index];
-      this.config.data[3].value = this.bandOption[this.index];
-      this.index = this.index+1;
-      this.$refs.capsule.calcData();
-      // let url = "/K8sService/cluster/" + selectCluster + "/nodes";
-      // console.log(url);
-      // let clusterData = []
-      // clusterData = await this.$http.get(url);
-      // console.log(clusterData.data[0])
-      // let usedcpu = parseInt(clusterData.data[0].usedcpu.slice(0,-1));
-      // let maxcpu = clusterData.data[0].maxcpu * 1000000000;
-      // let usedMemory = parseInt(clusterData.data[0].usedmemory.slice(0,-1));
-      // let maxMemory = parseInt(clusterData.data[0].maxmemory.slice(0,-3)) * 1000;
-      // this.config.data[0].value = (usedcpu / maxcpu)*100;
-      // console.log(this.config.data[0].value);
-      // // this.config.data[1].value = clusterData.data[0].maxcpu;
-      // this.config.data[2].value = (usedMemory / maxMemory)*100;
-      // console.log(this.config.data[2].value);
-      // this.$refs.capsule.$forceUpdate();
-      // this.config.data[3].value = clusterData.data[0].maxcpu;
-      //todo 在这里刷新集群的资源概况
-      //const { data } = await this.$http.get("/K8sService/clusters");
-      // for (var i = 0;i < this.config.data.length;i++){
-      //   var cur = this.config.data[i].value;
-      //   console.log(cur)
-      //   this.config.data[i].value = cur+1;
-      // }
-      //let status = data.status;
-      // let dataList = JSON.parse(data.data);
-      //
-      // if (status === 200) {
-      //   this.$refs.centreLeft1Chart.refresh(dataList);
-      // }
-    },
-    async fetchProposalSubmit() {
-      // const { data } = await this.$http.get("getDataByName?name=SYSTEM_SUM");
-      //
-      // let status = data.status;
-      // let dataList = JSON.parse(data.data);
-      //
-      // var dataRes = new Array();
-      // if (status === 200) {
-      //   for (var i = dataList.length - 1; i >= 0; i--) {
-      //     var item = {
-      //       name: "西峡",
-      //       value: 98,
-      //     };
-      //     item.name = dataList[i].X0;
-      //
-      //     item.value = dataList[i].COUNT;
-      //     dataRes.push(item);
-      //   }
-      //   this.config.data = dataRes;
-      //   this.$refs.capsule.calcData();
-      // }
+        const result = await getClusterResource(selectCluster);
+        const clusterResourceData = result.data;
+        this.metrics = [
+          {
+            name: "VCPU",
+            value: clusterResourceData.cpuUsage,
+          },
+          {
+            name: "存储",
+            value: clusterResourceData.storageUsage,
+          },
+          {
+            name: "内存",
+            value: clusterResourceData.memoryUsage,
+          },
+        ];
+        this.nodeCount = clusterResourceData.nodeCount || 0;
+      } catch (error) {
+        handleErrorMessage(error);
+      }
     },
   },
 };
@@ -194,6 +119,66 @@ export default {
   .body-box {
     border-radius: 0.125rem;
     overflow: hidden;
+  }
+  .resource-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 0.35rem 0.2rem 0;
+  }
+  .resource-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.12rem;
+  }
+  .resource-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #d9e7ff;
+    font-size: 0.18rem;
+  }
+  .resource-name {
+    font-weight: 600;
+    letter-spacing: 0.02rem;
+  }
+  .resource-value {
+    color: #5cd9e8;
+    font-family: DIN, "Helvetica Neue", Arial, sans-serif;
+  }
+  .resource-track {
+    width: 100%;
+    height: 0.2rem;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(92, 217, 232, 0.12);
+    border: 1px solid rgba(92, 217, 232, 0.18);
+  }
+  .resource-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #1d9bf0 0%, #5cd9e8 100%);
+    box-shadow: 0 0 0.12rem rgba(92, 217, 232, 0.35);
+    transition: width 0.3s ease;
+  }
+  .node-summary {
+    margin-top: 0.12rem;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 0.16rem 0.2rem;
+    border-radius: 0.1rem;
+    background: rgba(20, 37, 68, 0.55);
+    color: #d9e7ff;
+  }
+  .node-summary-label {
+    font-size: 0.18rem;
+  }
+  .node-summary-value {
+    color: #5cd9e8;
+    font-size: 0.32rem;
+    font-weight: 700;
+    line-height: 1;
   }
 }
 </style>

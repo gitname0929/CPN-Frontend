@@ -53,6 +53,12 @@ export default {
   mounted() {
   },
   methods: {
+    withTooltip(value, className = '') {
+      const text = value === undefined || value === null ? '' : String(value);
+      const classAttr = className ? ` class="${className}"` : '';
+      const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      return `<span${classAttr} title="${escaped}">${escaped}</span>`;
+    },
     setTimer() {
       clearInterval(this.timer);
       this.fetchNodeResource();
@@ -67,13 +73,14 @@ export default {
         console.log("获取node资源概况", data);
         this.NodeData = [];
         for (let i = 0; i < data.length; i++) {
+          const statusColor = data[i].nodeStatus === '正常' ? 'green' : 'red';
           let item = [
-            `<span style="color:#9fe6b8;">${data[i].nodeName}</span>`,
-            data[i].podCount,
-            data[i].cpu,
-            data[i].memory,
-            data[i].storage,
-            `<button style="border-radius: 4px; width: 40px; background-color: ${data[i].nodeStatus === '正常' ? 'green' : 'red'}">${data[i].nodeStatus}</button>`
+            this.withTooltip(data[i].nodeName, 'node-name'),
+            this.withTooltip(data[i].podCount),
+            this.withTooltip(data[i].cpu),
+            this.withTooltip(data[i].memory),
+            this.withTooltip(data[i].storage),
+            `<button title="${data[i].nodeStatus}" style="border-radius: 4px; min-width: 40px; padding: 0 8px; background-color: ${statusColor}; color: #fff; border: none;">${data[i].nodeStatus}</button>`
           ];
           this.NodeData.push(item);
         }
@@ -120,6 +127,15 @@ export default {
     .ranking {
       padding: 0.125rem;
       width: 98%;
+      :deep(.rows .row-item span),
+      :deep(.ceil span) {
+        display: inline-block;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        vertical-align: middle;
+      }
     }
     .percent {
       width: 54%;

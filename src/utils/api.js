@@ -42,7 +42,10 @@ export function getClusterResource(clusterName) {
 export function getNodeInfoByClusterName(clusterName) {
     return service({
         method: 'get',
-        url: `/k8s/getNodeInfo/${clusterName}`,
+        url: `/k8s/getNodeResource`,
+        params: {
+            clusterName: clusterName
+        }
     });
 }
 
