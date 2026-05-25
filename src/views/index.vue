@@ -94,6 +94,8 @@ export default {
       loading: true,
       clusterName: "kubernetes01", 
       currtime: "",
+      refreshTimer: null,
+      clockTimer: null,
     };
   },
   components: {
@@ -106,6 +108,14 @@ export default {
     this.cancelLoading();
     this.currentTime();
     this.autoInit();
+  },
+  beforeDestroy() {
+    if (this.refreshTimer) {
+      clearInterval(this.refreshTimer);
+    }
+    if (this.clockTimer) {
+      clearInterval(this.clockTimer);
+    }
   },
   methods: {
     getTime: function () {
@@ -125,7 +135,8 @@ export default {
       _this.currtime = yy + "-" + mm + "-" + dd + " " + hh + ":" + mf + ":" + ss;
     },
     currentTime() {
-      setInterval(this.getTime, 500);
+      this.getTime();
+      this.clockTimer = setInterval(this.getTime, 500);
     },
     cancelLoading() {
       setTimeout(() => {
@@ -135,18 +146,27 @@ export default {
     doRefreshChart(selectCluster) {
       this.clusterName = selectCluster;
       this.$refs.progressChart.updateClusterResource(selectCluster);
+      this.$refs.progressChart.startAutoRefresh(selectCluster);
       this.$refs.centerLeft1.clusterName = selectCluster;
       this.$refs.centerLeft1.getNumber();
       this.$refs.NodeInfo.clusterName = selectCluster;
       this.$refs.NodeInfo.refreshNodeInfo();
     },
     refreshAll() {
-      setInterval(() => this.doRefreshChart(this.clusterName), 5000);
+      if (this.refreshTimer) {
+        clearInterval(this.refreshTimer);
+      }
+      this.refreshTimer = setInterval(() => {
+        if (this.clusterName) {
+          this.doRefreshChart(this.clusterName);
+        }
+      }, 5000);
     },
     autoInit() {
       setTimeout(() => {
         this.clusterName = "k3s-cluster";
         this.doRefreshChart("k3s-cluster");
+        this.refreshAll();
       }, 800);
     },
   },

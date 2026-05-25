@@ -5,11 +5,14 @@ import subprocess
 import threading
 import time
 import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
 KUBECONFIG = "/home/a/.kube/config"
-CACHE_TTL = 5
+CACHE_TTL = 8
+NODE_RESOURCE_TTL = 10
+K3S_API_SERVER = "https://127.0.0.1:6443"
 HISTORY_SIZE = 60
 PORT = 8099
 
@@ -20,6 +23,12 @@ _cache = {
     "top_nodes_ts": 0,
     "pods_count": None,
     "pods_count_ts": 0,
+    "pod_per_node": None,
+    "pod_per_node_ts": 0,
+    "node_resource": None,
+    "node_resource_ts": 0,
+    "node_fs_stats": None,
+    "node_fs_stats_ts": 0,
 }
 _history = []
 _lock = threading.RLock()
@@ -144,6 +153,134 @@ def parse_memory_to_mib(mem_str):
         return 0
 
 
+def format_bytes_short(num_bytes):
+    """Format byte count to human-readable string."""
+    if num_bytes <= 0:
+        return "0"
+    units = ["B", "Ki", "Mi", "Gi", "Ti"]
+    value = float(num_bytes)
+    unit_idx = 0
+    while value >= 1024 and unit_idx < len(units) - 1:
+        value /= 1024
+        unit_idx += 1
+    if unit_idx == 0:
+        return f"{int(value)}{units[unit_idx]}"
+    return f"{value:.2f}{units[unit_idx]}"
+
+
+def format_cpu_short(millicores, cores_total):
+    """Format CPU used/total for display."""
+    if millicores >= 1000:
+        used = f"{millicores / 1000:.2f}"
+    else:
+        used = f"{millicores}m"
+    return f"{used} / {cores_total} 核"
+
+
+def fetch_node_fs_stats(node_name):
+    """Read node root filesystem used/available from kubelet stats summary."""
+    raw = run_kubectl(["get", "--raw", f"/api/v1/nodes/{node_name}/proxy/stats/summary"])
+    if not raw:
+        return None
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        return None
+    fs = data.get("node", {}).get("fs") or {}
+    used = int(fs.get("usedBytes") or 0)
+    available = int(fs.get("availableBytes") or 0)
+    capacity = int(fs.get("capacityBytes") or 0)
+    if used == 0 and available == 0 and capacity == 0:
+        return None
+    return {"used": used, "available": available, "capacity": capacity}
+
+
+def refresh_node_fs_stats(node_names):
+    """Fetch filesystem stats for all nodes (kubelet summary API)."""
+    stats = {}
+    if not node_names:
+        with _lock:
+            _cache["node_fs_stats"] = stats
+            _cache["node_fs_stats_ts"] = time.time()
+        return stats
+
+    workers = min(8, len(node_names))
+
+    def _fetch_one(name):
+        return name, fetch_node_fs_stats(name)
+
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = [pool.submit(_fetch_one, name) for name in node_names]
+        for fut in as_completed(futures):
+            name, item = fut.result()
+            if item:
+                stats[name] = item
+    with _lock:
+        _cache["node_fs_stats"] = stats
+        _cache["node_fs_stats_ts"] = time.time()
+    return stats
+
+
+def get_node_fs_stats_map(node_names):
+    """Return cached per-node fs stats, refreshing when stale."""
+    now = time.time()
+    with _lock:
+        cached = _cache["node_fs_stats"]
+        cached_ts = _cache["node_fs_stats_ts"]
+    if cached is not None and (now - cached_ts) < NODE_RESOURCE_TTL:
+        return cached
+    return refresh_node_fs_stats(node_names)
+
+
+def aggregate_cluster_resources(nodes, top, fs_stats):
+    """Cluster totals = sum of per-node used / sum of per-node capacity (CPU, mem, disk)."""
+    total_cpu_cap = 0
+    total_mem_cap = 0
+    total_cpu_used = 0
+    total_mem_used = 0
+    total_storage_used = 0
+    total_storage_capacity = 0
+    node_count = 0
+
+    for item in nodes.get("items", []):
+        caps = item["status"]["capacity"]
+        node_count += 1
+        total_cpu_cap += int(caps.get("cpu", "0"))
+        total_mem_cap += parse_resource_str(caps.get("memory", "0Ki"))
+        name = item["metadata"]["name"]
+        if name in top:
+            total_cpu_used += parse_cpu_to_millicores(top[name]["cpuCores"])
+            total_mem_used += parse_memory_to_mib(top[name]["memory"]) * 1024 * 1024
+        fs = (fs_stats or {}).get(name) or {}
+        used = int(fs.get("used") or 0)
+        available = int(fs.get("available") or 0)
+        capacity = int(fs.get("capacity") or 0) or (used + available)
+        total_storage_used += used
+        total_storage_capacity += capacity
+
+    storage_total_bytes = total_storage_capacity
+    cpu_usage = round(total_cpu_used / (total_cpu_cap * 1000) * 100, 1) if total_cpu_cap > 0 else 0
+    mem_usage = round(total_mem_used / total_mem_cap * 100, 1) if total_mem_cap > 0 else 0
+    storage_usage = (
+        round(total_storage_used / storage_total_bytes * 100, 1)
+        if storage_total_bytes > 0
+        else 0
+    )
+
+    return {
+        "node_count": node_count,
+        "cpu_usage": cpu_usage,
+        "mem_usage": mem_usage,
+        "storage_usage": storage_usage,
+        "cpu_used": format_cpu_short(total_cpu_used, total_cpu_cap),
+        "cpu_total": f"{total_cpu_cap} 核",
+        "memory_used": format_bytes_short(total_mem_used),
+        "memory_total": format_bytes_short(total_mem_cap),
+        "storage_used": format_bytes_short(total_storage_used),
+        "storage_total": format_bytes_short(total_storage_capacity),
+    }
+
+
 def parse_resource_str(resource_str):
     """Parse k8s resource string like '7726868Ki' to numeric value in base units."""
     s = resource_str.upper()
@@ -166,32 +303,15 @@ def collect_history():
     if not nodes or not top:
         return
 
-    total_cpu_cap = 0
-    total_mem_cap = 0
-    total_cpu_used = 0
-    total_mem_used = 0
-    ready_count = 0
-
-    for item in nodes.get("items", []):
-        name = item["metadata"]["name"]
-        caps = item["status"]["capacity"]
-        total_cpu_cap += int(caps.get("cpu", "0"))
-        total_mem_cap += parse_resource_str(caps.get("memory", "0Ki"))
-        for cond in item["status"].get("conditions", []):
-            if cond["type"] == "Ready" and cond["status"] == "True":
-                ready_count += 1
-        if name in top:
-            total_cpu_used += parse_cpu_to_millicores(top[name]["cpuCores"])
-            total_mem_used += parse_memory_to_mib(top[name]["memory"]) * 1024 * 1024
-
-    cpu_usage = round(total_cpu_used / (total_cpu_cap * 1000) * 100, 1) if total_cpu_cap > 0 else 0
-    mem_usage = round(total_mem_used / total_mem_cap * 100, 1) if total_mem_cap > 0 else 0
+    node_names = [item["metadata"]["name"] for item in nodes.get("items", [])]
+    fs_stats = get_node_fs_stats_map(node_names)
+    stats = aggregate_cluster_resources(nodes, top, fs_stats)
 
     entry = {
         "timestamp": int(time.time() * 1000),
-        "cpuUsage": cpu_usage,
-        "memoryUsage": mem_usage,
-        "storageUsage": 10,  # TODO: get actual storage usage from PVC
+        "cpuUsage": stats["cpu_usage"],
+        "memoryUsage": stats["mem_usage"],
+        "storageUsage": stats["storage_usage"],
     }
     with _lock:
         _history.append(entry)
@@ -204,6 +324,46 @@ def get_node_count():
     if not nodes:
         return 0
     return len(nodes.get("items", []))
+
+
+def refresh_pod_per_node():
+    """Background-thread-safe: recompute pod count per node."""
+    raw = run_kubectl([
+        "get", "pods", "--all-namespaces",
+        "--field-selector=status.phase!=Succeeded,status.phase!=Failed",
+        "-o", "custom-columns=NODE:.spec.nodeName",
+        "--no-headers",
+    ])
+    mapping = {}
+    if raw:
+        for line in raw.splitlines():
+            node_name = line.strip()
+            if node_name:
+                mapping[node_name] = mapping.get(node_name, 0) + 1
+    with _lock:
+        _cache["pod_per_node"] = mapping
+        _cache["pod_per_node_ts"] = time.time()
+
+
+def refresh_nodes():
+    raw = run_kubectl(["get", "nodes", "-o", "json"])
+    if raw:
+        with _lock:
+            _cache["nodes_raw"] = raw
+            _cache["nodes_ts"] = time.time()
+
+
+def refresh_top_nodes():
+    top = parse_top_nodes(run_kubectl(["top", "nodes", "--no-headers"]))
+    with _lock:
+        _cache["top_nodes"] = top
+        _cache["top_nodes_ts"] = time.time()
+
+
+def get_pod_per_node():
+    """Return last-known pod-per-node mapping refreshed by collector."""
+    with _lock:
+        return dict(_cache["pod_per_node"]) if _cache["pod_per_node"] is not None else {}
 
 
 def get_pod_count():
@@ -285,30 +445,22 @@ class APIHandler(BaseHTTPRequestHandler):
         if not nodes:
             return self._send_error("Failed to get nodes")
 
-        total_cpu_cap = 0
-        total_mem_cap = 0
-        total_cpu_used = 0
-        total_mem_used = 0
-        node_count = 0
-
-        for item in nodes.get("items", []):
-            caps = item["status"]["capacity"]
-            node_count += 1
-            total_cpu_cap += int(caps.get("cpu", "0"))
-            total_mem_cap += parse_resource_str(caps.get("memory", "0Ki"))
-            name = item["metadata"]["name"]
-            if name in top:
-                total_cpu_used += parse_cpu_to_millicores(top[name]["cpuCores"])
-                total_mem_used += parse_memory_to_mib(top[name]["memory"]) * 1024 * 1024
-
-        cpu_usage = round(total_cpu_used / (total_cpu_cap * 1000) * 100, 1) if total_cpu_cap > 0 else 0
-        mem_usage = round(total_mem_used / total_mem_cap * 100, 1) if total_mem_cap > 0 else 0
+        node_names = [item["metadata"]["name"] for item in nodes.get("items", [])]
+        fs_stats = get_node_fs_stats_map(node_names)
+        stats = aggregate_cluster_resources(nodes, top, fs_stats)
 
         self._send_json({"ret": 1, "data": {
-            "cpuUsage": cpu_usage,
-            "storageUsage": 10,
-            "memoryUsage": mem_usage,
-            "nodeCount": node_count,
+            "cpuUsage": stats["cpu_usage"],
+            "storageUsage": stats["storage_usage"],
+            "memoryUsage": stats["mem_usage"],
+            "nodeCount": stats["node_count"],
+            "cpuUsed": stats["cpu_used"],
+            "cpuTotal": stats["cpu_total"],
+            "memoryUsed": stats["memory_used"],
+            "memoryTotal": stats["memory_total"],
+            "storageUsed": stats["storage_used"],
+            "storageTotal": stats["storage_total"],
+            "ts": int(time.time()),
         }})
 
     def _handle_node_resource(self, cluster_name):
@@ -317,21 +469,9 @@ class APIHandler(BaseHTTPRequestHandler):
         if not nodes:
             return self._send_error("Failed to get nodes")
 
-        pod_per_node = {}
-
-        raw = run_kubectl([
-            "get",
-            "pods",
-            "--all-namespaces",
-            "-o",
-            "custom-columns=NODE:.spec.nodeName",
-            "--no-headers",
-        ])
-        if raw:
-            for line in raw.splitlines():
-                node_name = line.strip()
-                if node_name:
-                    pod_per_node[node_name] = pod_per_node.get(node_name, 0) + 1
+        pod_per_node = get_pod_per_node()
+        node_names = [item["metadata"]["name"] for item in nodes.get("items", [])]
+        fs_stats = get_node_fs_stats_map(node_names)
 
         result = []
         for item in nodes.get("items", []):
@@ -350,27 +490,38 @@ class APIHandler(BaseHTTPRequestHandler):
                 if cond["type"] == "Ready" and cond["status"] != "True":
                     is_ready = "异常"
 
+            fs = fs_stats.get(name) or {}
+            storage_used_bytes = int(fs.get("used") or 0)
+            storage_available_bytes = int(fs.get("available") or 0)
+            if storage_used_bytes > 0 or storage_available_bytes > 0:
+                storage_total_bytes = storage_used_bytes + storage_available_bytes
+                storage_pct = (
+                    round(storage_used_bytes / storage_total_bytes * 100, 1)
+                    if storage_total_bytes > 0
+                    else 0
+                )
+                storage_display = (
+                    f"{format_bytes_short(storage_used_bytes)} ({storage_pct}%) "
+                    f"/ {format_bytes_short(storage_available_bytes)}"
+                )
+            else:
+                storage_display = "获取失败"
+
             result.append({
                 "nodeName": name,
                 "podCount": pod_count,
-                "cpu": f"{cpu_cores} ({cpu_pct}) / {cpu_cap} cores",
+                "cpu": f"{cpu_cores} ({cpu_pct}) / {cpu_cap} 核",
                 "memory": f"{mem_val} ({mem_pct}) / {mem_cap}",
-                "storage": "N/A",
+                "storage": storage_display,
                 "nodeStatus": is_ready,
             })
 
-        self._send_json({"ret": 1, "data": result})
+        self._send_json({"ret": 1, "data": result, "ts": int(time.time())})
 
     def _handle_get_data(self, cluster_name):
-        start = time.time()
-        node_count = get_node_count()
-        pod_count = get_pod_count()
-        elapsed = round((time.time() - start) * 1000)
-
         self._send_json({"ret": 1, "data": {
-            "responseTimeMs": elapsed,
-            "podCount": pod_count,
-            "nodeCount": node_count,
+            "podCount": get_pod_count(),
+            "nodeCount": get_node_count(),
         }})
 
     def _handle_cluster_info(self, cluster_name):
@@ -407,12 +558,31 @@ class APIHandler(BaseHTTPRequestHandler):
 
 
 def history_collector():
+    """Periodically refresh caches so API handlers always read from memory."""
     while True:
         try:
+            nodes = get_nodes_json()
+            if nodes:
+                node_names = [
+                    item["metadata"]["name"] for item in nodes.get("items", [])
+                ]
+                refresh_node_fs_stats(node_names)
             collect_history()
+            refresh_nodes()
+            refresh_top_nodes()
         except Exception as e:
             print(f"[collector error] {e}")
         time.sleep(5)
+
+
+def pod_collector():
+    """Refresh heavy pod-per-node mapping less frequently."""
+    while True:
+        try:
+            refresh_pod_per_node()
+        except Exception as e:
+            print(f"[pod-collector error] {e}")
+        time.sleep(15)
 
 
 def main():
@@ -421,6 +591,8 @@ def main():
 
     t = threading.Thread(target=history_collector, daemon=True)
     t.start()
+    t2 = threading.Thread(target=pod_collector, daemon=True)
+    t2.start()
 
     server = ThreadingHTTPServer(("0.0.0.0", PORT), APIHandler)
     try:
