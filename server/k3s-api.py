@@ -9,7 +9,9 @@ from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
 KUBECONFIG = "/home/a/.kube/config"
-CACHE_TTL = 5
+CACHE_TTL = 8
+NODE_RESOURCE_TTL = 10
+K3S_API_SERVER = "https://127.0.0.1:6443"
 HISTORY_SIZE = 60
 PORT = 8099
 
@@ -20,6 +22,10 @@ _cache = {
     "top_nodes_ts": 0,
     "pods_count": None,
     "pods_count_ts": 0,
+    "pod_per_node": None,
+    "pod_per_node_ts": 0,
+    "node_resource": None,
+    "node_resource_ts": 0,
 }
 _history = []
 _lock = threading.RLock()
@@ -206,6 +212,60 @@ def get_node_count():
     return len(nodes.get("items", []))
 
 
+def refresh_pod_per_node():
+    """Background-thread-safe: recompute pod count per node."""
+    raw = run_kubectl([
+        "get", "pods", "--all-namespaces",
+        "--field-selector=status.phase!=Succeeded,status.phase!=Failed",
+        "-o", "custom-columns=NODE:.spec.nodeName",
+        "--no-headers",
+    ])
+    mapping = {}
+    if raw:
+        for line in raw.splitlines():
+            node_name = line.strip()
+            if node_name:
+                mapping[node_name] = mapping.get(node_name, 0) + 1
+    with _lock:
+        _cache["pod_per_node"] = mapping
+        _cache["pod_per_node_ts"] = time.time()
+
+
+def refresh_nodes():
+    raw = run_kubectl(["get", "nodes", "-o", "json"])
+    if raw:
+        with _lock:
+            _cache["nodes_raw"] = raw
+            _cache["nodes_ts"] = time.time()
+
+
+def refresh_top_nodes():
+    top = parse_top_nodes(run_kubectl(["top", "nodes", "--no-headers"]))
+    with _lock:
+        _cache["top_nodes"] = top
+        _cache["top_nodes_ts"] = time.time()
+
+
+def measure_api_latency():
+    """Measure kube-apiserver response latency in ms."""
+    try:
+        start = time.time()
+        subprocess.run(
+            ["k3s", "kubectl", "get", "--raw", "/readyz"],
+            capture_output=True, timeout=5,
+            env={"KUBECONFIG": KUBECONFIG, "PATH": "/usr/local/bin:/usr/bin:/bin"},
+        )
+        return round((time.time() - start) * 1000)
+    except Exception:
+        return -1
+
+
+def get_pod_per_node():
+    """Return last-known pod-per-node mapping refreshed by collector."""
+    with _lock:
+        return dict(_cache["pod_per_node"]) if _cache["pod_per_node"] is not None else {}
+
+
 def get_pod_count():
     return get_running_pod_count()
 
@@ -309,6 +369,7 @@ class APIHandler(BaseHTTPRequestHandler):
             "storageUsage": 10,
             "memoryUsage": mem_usage,
             "nodeCount": node_count,
+            "ts": int(time.time()),
         }})
 
     def _handle_node_resource(self, cluster_name):
@@ -317,21 +378,7 @@ class APIHandler(BaseHTTPRequestHandler):
         if not nodes:
             return self._send_error("Failed to get nodes")
 
-        pod_per_node = {}
-
-        raw = run_kubectl([
-            "get",
-            "pods",
-            "--all-namespaces",
-            "-o",
-            "custom-columns=NODE:.spec.nodeName",
-            "--no-headers",
-        ])
-        if raw:
-            for line in raw.splitlines():
-                node_name = line.strip()
-                if node_name:
-                    pod_per_node[node_name] = pod_per_node.get(node_name, 0) + 1
+        pod_per_node = get_pod_per_node()
 
         result = []
         for item in nodes.get("items", []):
@@ -359,16 +406,14 @@ class APIHandler(BaseHTTPRequestHandler):
                 "nodeStatus": is_ready,
             })
 
-        self._send_json({"ret": 1, "data": result})
+        self._send_json({"ret": 1, "data": result, "ts": int(time.time())})
 
     def _handle_get_data(self, cluster_name):
-        start = time.time()
         node_count = get_node_count()
         pod_count = get_pod_count()
-        elapsed = round((time.time() - start) * 1000)
 
         self._send_json({"ret": 1, "data": {
-            "responseTimeMs": elapsed,
+            "responseTimeMs": measure_api_latency(),
             "podCount": pod_count,
             "nodeCount": node_count,
         }})
@@ -407,12 +452,25 @@ class APIHandler(BaseHTTPRequestHandler):
 
 
 def history_collector():
+    """Periodically refresh caches so API handlers always read from memory."""
     while True:
         try:
             collect_history()
+            refresh_nodes()
+            refresh_top_nodes()
         except Exception as e:
             print(f"[collector error] {e}")
         time.sleep(5)
+
+
+def pod_collector():
+    """Refresh heavy pod-per-node mapping less frequently."""
+    while True:
+        try:
+            refresh_pod_per_node()
+        except Exception as e:
+            print(f"[pod-collector error] {e}")
+        time.sleep(15)
 
 
 def main():
@@ -421,6 +479,8 @@ def main():
 
     t = threading.Thread(target=history_collector, daemon=True)
     t.start()
+    t2 = threading.Thread(target=pod_collector, daemon=True)
+    t2.start()
 
     server = ThreadingHTTPServer(("0.0.0.0", PORT), APIHandler)
     try:

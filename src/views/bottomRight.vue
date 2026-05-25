@@ -64,7 +64,7 @@ export default {
       this.fetchNodeResource();
       this.timer = setInterval(() => {
         this.fetchNodeResource(); //获取-状态
-      }, 5000);
+      }, 1000);
     },
     async fetchNodeResource() {
       try {
@@ -85,7 +85,9 @@ export default {
           this.NodeData.push(item);
         }
         this.config.data = this.NodeData;
-        this.$refs.Node.calcData(this.config);
+        if (this.$refs.Node) {
+          this.$refs.Node.calcData(this.config);
+        }
       } catch (error) {
         handleErrorMessage(error);
       }

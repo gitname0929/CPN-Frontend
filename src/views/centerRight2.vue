@@ -36,6 +36,8 @@ import handleErrorMessage from "@/utils/handleError";
 export default {
   data() {
     return {
+      currentCluster: "",
+      refreshTimer: null,
       metrics: [
         {
           name: "VCPU",
@@ -59,6 +61,11 @@ export default {
   },
   mounted() {
   },
+  beforeDestroy() {
+    if (this.refreshTimer) {
+      clearInterval(this.refreshTimer);
+    }
+  },
   methods: {
     clampPercent(value) {
       const numeric = Number(value);
@@ -75,6 +82,7 @@ export default {
       return `${numeric.toFixed(1)}%`;
     },
     async updateClusterResource(selectCluster) {
+      this.currentCluster = selectCluster;
       console.log("获取集群信息: ", selectCluster);
       try {
         const result = await getClusterResource(selectCluster);
@@ -97,6 +105,17 @@ export default {
       } catch (error) {
         handleErrorMessage(error);
       }
+    },
+    startAutoRefresh(selectCluster) {
+      if (this.refreshTimer) {
+        clearInterval(this.refreshTimer);
+      }
+      this.currentCluster = selectCluster;
+      this.refreshTimer = setInterval(() => {
+        if (this.currentCluster) {
+          this.updateClusterResource(this.currentCluster);
+        }
+      }, 1000);
     },
   },
 };
