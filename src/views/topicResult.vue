@@ -41,7 +41,7 @@
 				v-model="currentChart" 
 				size="small" 
 				placeholder="请选择图表" 
-				style="width: 220px;"
+				style="width: 200px;"
 				@change="onChartChange"
 			>
 				<el-option
@@ -400,7 +400,7 @@ export default {
 	padding: 0 0.15rem 0.15rem;
 	min-height: 0;//让 flex 子元素可以正确收缩
     margin-top: 0.1rem;
-    padding: 0 0.15rem 0.15rem;
+    padding: 0.25rem 0.15rem 0.15rem;
     //min-height: 400px; // 确保图表有足够空间
   }
   
