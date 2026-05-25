@@ -90,69 +90,44 @@
 
 <script>
 import echarts from 'echarts';
-import { fetchTopicData } from '@/api/topicApi';
+import { fetchTopicData, loadFiguresConfig } from '@/api/topicApi';
+import {
+  buildTopicsFromConfig,
+  buildChartOptionsForTopic,
+} from '@/utils/figureParser';
 
 export default {
   name: 'TopicResult',
   data() {
     return {
-		// 当前选中的值
 		currentTopic: 1,
 		currentChart: '',
 		chartInstance: null,
-		isLoading: false,       // 加载状态
-		loadedChartData: null,  // 动态加载的图表数据
-		loadedTableData: [],    // 动态加载的表格数据
-	
-		// 课题列表
-		topics: [
-			{ id: 1, name: '课题一' },
-			{ id: 2, name: '课题二' },
-			{ id: 3, name: '课题三' },
-			{ id: 4, name: '课题四' },
-		],
-	
-		// 每个课题对应的图表选项
-		chartOptionsMap: {
-			1: [
-			{ label: '图1：性能对比图', value: 'chart1'},
-			{ label: '表1：昇腾测试数据', value: 'table1' },
-			{ label: '表2：飞腾测试数据', value: 'table2' },
-			],
-			2: [
-			{ label: '图1.1：PC低负载谷歌数据集', value: 'chart1' },
-			{ label: '图1.2：PC高负载谷歌数据集', value: 'chart2' },
-			{ label: '图1.3：PC低负载华为数据集', value: 'chart3' },
-			{ label: '图1.4：PC高负载华为数据集', value: 'chart4' },
-			{ label: '图2.1：昇腾低负载谷歌数据集', value: 'chart5' },
-			{ label: '图2.2：昇腾高负载谷歌数据集', value: 'chart6' },
-			{ label: '图2.3：昇腾低负载华为数据集', value: 'chart7' },
-			{ label: '图2.4：昇腾高负载华为数据集', value: 'chart8' },
-			{ label: '图3.1：飞腾低负载谷歌数据集', value: 'chart9' },
-			{ label: '图3.2：飞腾高负载谷歌数据集', value: 'chart10' },
-			{ label: '图3.3：飞腾低负载华为数据集', value: 'chart11' },
-			{ label: '图3.4：飞腾高负载华为数据集', value: 'chart12' },
-			],
-			3: [
-			{ label: '图1.1：昇腾1:1时延图', value: 'chart1' },
-			{ label: '图1.2：昇腾1:1内存图', value: 'chart2' },
-			{ label: '图2.1：飞腾1:1时延图', value: 'chart3' },
-			{ label: '图2.2：飞腾1:1内存图', value: 'chart4' },
-			],
-			4: [
-			{ label: '图1：柱状图', value: 'chart1' },
-			{ label: '表格：明细数据', value: 'table' },
-			],
-		},
+		isLoading: false,
+		configLoading: true,
+		figuresConfig: null,
+		loadedChartData: null,
+		loadedTableData: [],
     };
   },
   computed: {
+    topics() {
+        if (!this.figuresConfig) return [];
+        return buildTopicsFromConfig(this.figuresConfig);
+    },
     currentChartOptions() {
-        return this.chartOptionsMap[this.currentTopic] || [];
+        if (!this.figuresConfig) return [];
+        return buildChartOptionsForTopic(this.figuresConfig, this.currentTopic);
+    },
+    currentFigureMeta() {
+        if (!this.figuresConfig || !this.currentChart) return null;
+        const topic = this.figuresConfig.topics.find((t) => t.id === this.currentTopic);
+        if (!topic) return null;
+        return topic.figures.find((f) => f.id === this.currentChart) || null;
     },
     currentView() {
-        if (!this.currentChart) return 'chart';
-        return this.currentChart.startsWith('table') ? 'table' : 'chart';
+        if (!this.currentFigureMeta) return 'chart';
+        return this.currentFigureMeta.type === 'table' ? 'table' : 'chart';
     },
     currentTableColumns() {
         if (this.loadedTableData && this.loadedTableData.length > 0) {
@@ -173,8 +148,18 @@ export default {
         }
     }
   },
-  mounted() {
-        this.initDefaultSelection();
+  async mounted() {
+        try {
+          this.figuresConfig = await loadFiguresConfig();
+          if (this.topics.length > 0) {
+            this.currentTopic = this.topics[0].id;
+          }
+          this.initDefaultSelection();
+        } catch (error) {
+          console.error('加载 figures 配置失败:', error);
+        } finally {
+          this.configLoading = false;
+        }
         window.addEventListener('resize', this.handleResize);
   },
  beforeDestroy() {
@@ -186,14 +171,14 @@ export default {
   },
   methods: {
     initDefaultSelection() {
-        const options = this.chartOptionsMap[this.currentTopic];
+        const options = this.currentChartOptions;
         if (options && options.length > 0) {
           this.currentChart = options[0].value;
           this.loadTopicData();
         }
     },
-    onTopicChange(topicId) {
-        const options = this.chartOptionsMap[topicId];
+    onTopicChange() {
+        const options = this.currentChartOptions;
         if (options && options.length > 0) {
           this.currentChart = options[0].value;
         }

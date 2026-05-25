@@ -6,7 +6,11 @@
           <icon name="chart-bar"></icon>
         </span>
         <div class="d-flex">
-          <span class="fs-xl text mx-2" style="font-size: medium">响应情况</span>
+          <span
+            class="fs-xl text mx-2"
+            style="font-size: medium"
+            title="展示集群节点规模与运行中的工作负载"
+          >集群运行概况</span>
           <dv-decoration-3 style="
               width: 1.25rem;
               height: 0.25rem;
@@ -18,16 +22,12 @@
         <!-- <centreLeft1Chart ref="centreLeft1Chart" /> -->
         <dv-active-ring-chart ref="ring" :config="config" style="height: 3.25rem; width: 3.25rem" />
       </div>
-      <!-- 4个主要的数据 -->
       <div class="bottom-data">
-        <div class="item-box" v-for="(item, index) in numberData" :key="index">
-          <div class="d-flex">
-            <dv-digital-flop :config="item.number" style="width: 2.5rem; height: 0.625rem" />
+        <div class="item-box">
+          <div class="d-flex jc-center">
+            <dv-digital-flop :config="podCountConfig" style="width: 2.5rem; height: 0.625rem" />
           </div>
-          <p class="text" style="text-align: center">
-            {{ item.text }}
-            <!-- <span class="colorYellow">(个)</span> -->
-          </p>
+          <p class="text" style="text-align: center">运行Pod(个)</p>
         </div>
       </div>
     </div>
@@ -57,40 +57,11 @@ export default {
         },
         showOriginValue: true,
       },
-      numberData: [
-        {
-          number: {
-            number: [0],
-            toFixed: 0,
-            content: "{nt}",
-          },
-          text: "响应时间(ms)",
-        },
-        {
-          number: {
-            number: [0],
-            toFixed: 0,
-            content: "{nt}",
-          },
-          text: "pod数(个)",
-        },
-        // {
-        //   number: {
-        //     number: [0],
-        //     toFixed: 0,
-        //     content: "{nt}",
-        //   },
-        //   text: "运行中任务数",
-        // },
-        // {
-        //   number: {
-        //     number: [0],
-        //     toFixed: 0,
-        //     content: "{nt}",
-        //   },
-        //   text: "未确认任务数",
-        // },
-      ],
+      podCountConfig: {
+        number: [0],
+        toFixed: 0,
+        content: "{nt}",
+      },
     };
   },
 
@@ -110,15 +81,14 @@ export default {
         return;
       }
       else{
-        // const t0 = performance.now();
         const result = await getData(this.clusterName);
-        // const durationMs = Math.round(performance.now() - t0);
         console.log("centreLeft1 获取数据",this.clusterName);
-        this.numberData[0].number.number = [result.data.responseTimeMs]; //durationMs
-        this.numberData[1].number.number = [result.data.podCount];
+        this.podCountConfig = JSON.parse(JSON.stringify({
+          ...this.podCountConfig,
+          number: [result.data.podCount],
+        }));
         this.config.data[0].value = result.data.nodeCount;
-        this.config = JSON.parse(JSON.stringify(this.config)); // 触发视图更新
-        this.numberData = JSON.parse(JSON.stringify(this.numberData)); // 触发视图更新
+        this.config = JSON.parse(JSON.stringify(this.config));
       }
       
     }
@@ -153,24 +123,12 @@ export default {
   }
 
   .bottom-data {
+    display: flex;
+    justify-content: center;
+
     .item-box {
-      float: right;
-      position: relative;
-      width: 50%;
       color: #d3d6dd;
-
-      // 金币
-      .coin {
-        position: absolute;
-        left: 0.1rem;
-        top: 0.2125rem;
-        font-size: 0.25rem;
-        color: #ffc107;
-      }
-
-      .colorYellow {
-        color: yellowgreen;
-      }
+      text-align: center;
     }
   }
 }

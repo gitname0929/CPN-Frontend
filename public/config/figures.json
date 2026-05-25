@@ -1,0 +1,112 @@
+{
+  "topics": [
+    {
+      "topic": 1,
+      "figures": [
+        {
+          "title": "图1：性能对比图",
+          "type": "mixed"
+        },
+        {
+          "title": "表1：昇腾测试数据",
+          "type": "table"
+        },
+        {
+          "title": "表2：飞腾测试数据",
+          "type": "table"
+        }
+      ]
+    },
+    {
+      "topic": 2,
+      "figures": [
+        {
+          "title": "图1.1：PC低负载谷歌数据集",
+          "type": "mixed"
+        },
+        {
+          "title": "图1.2：PC高负载谷歌数据集",
+          "type": "mixed"
+        },
+        {
+          "title": "图1.3：PC低负载华为数据集",
+          "type": "mixed"
+        },
+        {
+          "title": "图1.4：PC高负载华为数据集",
+          "type": "mixed"
+        },
+        {
+          "title": "图2.1：昇腾低负载谷歌数据集",
+          "type": "mixed"
+        },
+        {
+          "title": "图2.2：昇腾高负载谷歌数据集",
+          "type": "mixed"
+        },
+        {
+          "title": "图2.3：昇腾低负载华为数据集",
+          "type": "mixed"
+        },
+        {
+          "title": "图2.4：昇腾高负载华为数据集",
+          "type": "mixed"
+        },
+        {
+          "title": "图3.1：飞腾低负载谷歌数据集",
+          "type": "mixed"
+        },
+        {
+          "title": "图3.2：飞腾高负载谷歌数据集",
+          "type": "mixed"
+        },
+        {
+          "title": "图3.3：飞腾低负载华为数据集",
+          "type": "mixed"
+        },
+        {
+          "title": "图3.4：飞腾高负载华为数据集",
+          "type": "mixed"
+        }
+      ]
+    },
+    {
+      "topic": 3,
+      "figures": [
+        {
+          "title": "图1.1：昇腾1:1时延图",
+          "type": "bar"
+        },
+        {
+          "title": "图1.2：昇腾1:1内存图",
+          "type": "bar"
+        },
+        {
+          "title": "图2.1：飞腾1:1时延图",
+          "type": "bar"
+        },
+        {
+          "title": "图2.2：飞腾1:1内存图",
+          "type": "bar"
+        }
+      ]
+    },
+    {
+      "topic": 4,
+      "figures": [
+        {
+          "title": "图1：柱状图",
+          "type": "bar"
+        },
+        {
+          "title": "表1：明细数据",
+          "type": "table"
+        },
+        {
+          "title": "表2：存储卷数据",
+          "type": "table"
+        }
+      ]
+    }
+  ]
+}

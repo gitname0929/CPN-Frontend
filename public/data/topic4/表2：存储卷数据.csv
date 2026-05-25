@@ -1,0 +1,3 @@
+﻿存储卷,容量,已用,类型
+vol-app-logs,500GB,320GB,SSD
+vol-database,1TB,780GB,HDD
