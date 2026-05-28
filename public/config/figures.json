@@ -95,16 +95,12 @@
       "topic": 4,
       "figures": [
         {
-          "title": "图1：柱状图",
-          "type": "bar"
+          "title": "图1：昇腾吞吐量对比",
+          "type": "mixed"
         },
         {
-          "title": "表1：明细数据",
-          "type": "table"
-        },
-        {
-          "title": "表2：存储卷数据",
-          "type": "table"
+          "title": "图2：飞腾吞吐量对比",
+          "type": "mixed"
         }
       ]
     }

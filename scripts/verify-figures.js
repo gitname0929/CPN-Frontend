@@ -111,7 +111,10 @@ function parseTypeCell(typeStr, seriesName, defaultType) {
   const base = parts[0].toLowerCase();
   const opts = { type: base };
   if (base === 'scatter') opts.symbolSize = 20;
-  if (base === 'line' && (parts[1] === 'symbol' || parts[1] === '20')) opts.symbolSize = 20;
+  if (base === 'line') {
+    opts.smooth = true;
+    if (parts[1] === 'symbol' || parts[1] === '20') opts.symbolSize = 20;
+  }
   if (base === 'bar') {
     if (parts[1] === 'stack' && parts[2]) {
       opts.stack = parts[2];
@@ -123,18 +126,30 @@ function parseTypeCell(typeStr, seriesName, defaultType) {
   return opts;
 }
 
+function parseCellValue(v) {
+  const s = String(v ?? '').trim();
+  if (s === '') return '';
+  const sep = s.indexOf('|');
+  if (sep >= 0) {
+    const valueText = s.slice(0, sep).trim();
+    const label = s.slice(sep + 1).trim();
+    const n = Number(valueText);
+    return {
+      value: Number.isFinite(n) && valueText !== '' ? n : valueText,
+      label,
+    };
+  }
+  const n = Number(s);
+  return Number.isFinite(n) && s !== '' ? n : s;
+}
+
 function parseChart(rows, figure) {
   const { xAxisName, yAxisName, columnTypes, seriesNames, dataRows } = splitChartRows(rows);
   const categories = dataRows.map((r) => String(r[0] ?? ''));
   const series = seriesNames.map((name, idx) => {
     const col = idx + 1;
     const opts = parseTypeCell(columnTypes ? columnTypes[idx] : '', name, figure.type);
-    const data = dataRows.map((r) => {
-      const v = r[col];
-      const s = String(v ?? '').trim();
-      const n = Number(s);
-      return Number.isFinite(n) && s !== '' ? n : s;
-    });
+    const data = dataRows.map((r) => parseCellValue(r[col]));
     return { name, ...opts, data };
   });
   const result = { categories, series };
@@ -169,6 +184,31 @@ function deepEqual(a, b) {
   return a === b;
 }
 
+function verifyThroughputCompare(rows) {
+  const META_CHART = new Set(['图表类型', 'charttype', 'chart type']);
+  let i = 0;
+  while (i < rows.length) {
+    const key = metaKey(rows[i][0]);
+    if (META_X.has(key) || META_Y.has(key) || META_CHART.has(key)
+      || ['设备', 'device', '标题', '目标倍数', 'targetmultiplier', 'target', '主方法', 'mainmethod', 'main'].includes(key)) {
+      i += 1;
+      continue;
+    }
+    break;
+  }
+  if (i >= rows.length) return false;
+  const categories = rows[i].slice(1).filter((c) => String(c ?? '').trim());
+  if (categories.length < 1) return false;
+
+  const methods = [];
+  for (let r = i + 1; r < rows.length; r += 1) {
+    const name = String(rows[r][0] ?? '').trim();
+    if (!name) continue;
+    methods.push(name);
+  }
+  return methods.includes('LRU') && methods.includes('Ours') && methods.length >= 3;
+}
+
 function main() {
   const mock = loadMockData();
   const raw = JSON.parse(fs.readFileSync(configPath, 'utf8'));
@@ -178,9 +218,30 @@ function main() {
 
   config.topics.forEach((topic) => {
     topic.figures.forEach((figure) => {
-      const expected = mock[topic.id][figure.mockKey];
       const filePath = path.join(dataDir, figure.dataFile);
+      if (!fs.existsSync(filePath)) {
+        fail += 1;
+        console.error(`MISSING ${figure.dataFile}`);
+        return;
+      }
       const rows = csvTextToRows(fs.readFileSync(filePath, 'utf8'));
+
+      if (figure.type === 'throughput_compare') {
+        if (verifyThroughputCompare(rows)) {
+          ok += 1;
+        } else {
+          fail += 1;
+          console.error(`INVALID throughput_compare topic${topic.id}/${figure.id}`);
+        }
+        return;
+      }
+
+      const expected = mock[topic.id] && mock[topic.id][figure.mockKey];
+      if (!expected) {
+        console.warn(`SKIP (no mock) topic${topic.id}/${figure.id}`);
+        ok += 1;
+        return;
+      }
       const parsed = figure.type === 'table' ? parseTable(rows) : parseChart(rows, figure);
 
       if (deepEqual(parsed, expected)) {

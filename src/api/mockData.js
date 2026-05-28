@@ -602,8 +602,76 @@ const mockTopicData = {
   },
   4: {
     chart1: {
-      series: [{ name: 'Pod数量', type: 'bar', data: [15, 23, 18, 27, 20, 12] }],
-      categories: ['应用A', '应用B', '应用C', '应用D', '应用E', '应用F']
+      xAxisName: '请求强度',
+      yAxisName: '吞吐量',
+      categories: ['6 req/s', '8 req/s', '10 req/s'],
+      series: [
+        {
+          name: 'LRU',
+          type: 'bar',
+          data: [
+            { value: 1.25, label: 'Ours +60.8%' },
+            { value: 1.11, label: 'Ours +113.5%' },
+            { value: 0.89, label: 'Ours +162.9%' },
+          ]
+        },
+        {
+          name: 'Ours w/o prediction',
+          type: 'bar',
+          data: [
+            { value: 0.87, label: 'Ours +131.0%' },
+            { value: 0.83, label: 'Ours +185.5%' },
+            { value: 0.67, label: 'Ours +249.2%' },
+          ]
+        },
+        {
+          name: 'Ours',
+          type: 'bar',
+          data: [2.01, 2.37, 2.34]
+        },
+        {
+          name: '30%提升下界',
+          type: 'line',
+          smooth: true,
+          data: [1.63, 1.44, 1.16]
+        }
+      ]
+    },
+    chart2: {
+      xAxisName: '请求强度',
+      yAxisName: '吞吐量',
+      categories: ['6 req/s', '8 req/s', '10 req/s'],
+      series: [
+        {
+          name: 'LRU',
+          type: 'bar',
+          data: [
+            { value: 0.8, label: 'Ours +37.5%' },
+            { value: 1.07, label: 'Ours +54.2%' },
+            { value: 1.1, label: 'Ours +83.6%' },
+          ]
+        },
+        {
+          name: 'Ours w/o prediction',
+          type: 'bar',
+          data: [
+            { value: 0.76, label: 'Ours +44.7%' },
+            { value: 0.88, label: 'Ours +87.5%' },
+            { value: 0.83, label: 'Ours +143.4%' },
+          ]
+        },
+        {
+          name: 'Ours',
+          type: 'bar',
+          data: [1.1, 1.65, 2.02]
+        },
+        {
+          name: '30%提升下界',
+          type: 'line',
+          smooth: true,
+          data: [1.04, 1.39, 1.43]
+        }
+      ]
     },
     table1: [
       { 应用: '应用A', Pod数: '15', 状态: '运行中' },

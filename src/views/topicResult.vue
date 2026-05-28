@@ -170,6 +170,29 @@ export default {
     }
   },
   methods: {
+    formatChartValue(point) {
+        const raw = point && typeof point === 'object' && Object.prototype.hasOwnProperty.call(point, 'value')
+          ? point.value
+          : point;
+        if (raw === null || raw === undefined || raw === '') return '';
+        const n = Number(raw);
+        if (!Number.isFinite(n)) return String(raw);
+        const rounded = Math.round(n * 100) / 100;
+        return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2);
+    },
+    formatChartLabel(point) {
+        const value = this.formatChartValue(point);
+        if (point && typeof point === 'object' && point.label) {
+          return value ? `${value}\n${point.label}` : point.label;
+        }
+        return value;
+    },
+    formatVisibleChartLabel(point) {
+        if (point && typeof point === 'object' && point.label) {
+          return this.formatChartLabel(point);
+        }
+        return '';
+    },
     initDefaultSelection() {
         const options = this.currentChartOptions;
         if (options && options.length > 0) {
@@ -234,10 +257,20 @@ export default {
   
         const series = chartData.series.map((s, index) => {
           const colors = ['#00f0ff', '#ffd700', '#ff6b6b', '#4ecdc4', '#a855f7'];
+          const hasExplicitLabels = Array.isArray(s.data)
+            && s.data.some((point) => point && typeof point === 'object' && point.label);
           return {
             ...s,
             itemStyle: s.itemStyle || { color: colors[index % colors.length] },
             smooth: s.type === 'line' ? true : s.smooth,
+            label: s.label || (hasExplicitLabels ? {
+              show: true,
+              position: s.type === 'line' ? 'top' : 'top',
+              distance: 6,
+              color: '#d3d6dd',
+              fontSize: 10,
+              formatter: (params) => this.formatVisibleChartLabel(params.data),
+            } : undefined),
           };
         });
   
@@ -249,7 +282,19 @@ export default {
             trigger: series[0].type === 'pie' ? 'item' : 'axis',
             backgroundColor: 'rgba(15, 19, 37, 0.9)',
             borderColor: '#00f0ff',
-            textStyle: { color: '#d3d6dd' }
+            textStyle: { color: '#d3d6dd' },
+            formatter: (params) => {
+              if (!Array.isArray(params)) return '';
+              const lines = [];
+              if (params[0] && params[0].axisValue != null) {
+                lines.push(params[0].axisValue);
+              }
+              params.forEach((item) => {
+                const label = this.formatChartLabel(item.data);
+                lines.push(`${item.marker} ${item.seriesName}: ${label}`);
+              });
+              return lines.join('<br/>');
+            },
           },
           legend: {
             data: legendData,

@@ -91,6 +91,16 @@ export function buildChartOptionsForTopic(config, topicId) {
 function cellValue(val) {
   if (val === null || val === undefined || val === '') return '';
   const s = String(val).trim();
+  const sep = s.indexOf('|');
+  if (sep >= 0) {
+    const valueText = s.slice(0, sep).trim();
+    const label = s.slice(sep + 1).trim();
+    const n = Number(valueText);
+    return {
+      value: Number.isFinite(n) && valueText !== '' ? n : valueText,
+      label,
+    };
+  }
   const n = Number(s);
   return Number.isFinite(n) && s !== '' ? n : s;
 }

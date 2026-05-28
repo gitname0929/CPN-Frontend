@@ -1,0 +1,7 @@
+x轴,请求强度
+y轴,吞吐量
+类型,bar,bar,bar,line
+,LRU,Ours w/o prediction,Ours,30%提升下界
+6 req/s,1.25|Ours +60.8%,0.87|Ours +131.0%,2.01,1.63
+8 req/s,1.11|Ours +113.5%,0.83|Ours +185.5%,2.37,1.44
+10 req/s,0.89|Ours +162.9%,0.67|Ours +249.2%,2.34,1.16
