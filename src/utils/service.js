@@ -59,7 +59,10 @@ service.interceptors.response.use(
 
   error => {
     // 对响应错误做些什么
-    console.log('response err:' + error)
+    const data = error.response && error.response.data ? error.response.data : {}
+    const message = data.msg || data.message || data.error || error.message || '请求失败'
+    console.log('response err:' + message)
+    error.message = message
     return Promise.reject(error)
   }
 )

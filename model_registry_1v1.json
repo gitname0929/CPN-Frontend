@@ -1,0 +1,485 @@
+{
+  "deit_tiny_patch16_224": {
+    "enabled": true,
+    "arch": "deit_tiny_patch16_224",
+    "num_classes": 100,
+    "pth": "/home/a/709Docker/kt3_resource/models/backbone_deit_tiny_patch16_224_pretrained.pth",
+    "clients": {
+      "ft": {
+        "device_key": "device_0",
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_fvs/cut_f_s_deit_tiny_patch16_224.json"
+      },
+      "ascend": {
+        "device_key": "device_0",
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_svs/cut_deit_tiny_patch16_224.json"
+      },
+      "mixed": {
+        "device_keys": [
+          "device_0",
+          "device_1"
+        ],
+        "clients": [
+          {
+            "type": "ft",
+            "device_key": "device_0"
+          },
+          {
+            "type": "ascend",
+            "device_key": "device_1"
+          }
+        ],
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_2v1_fsVs/cut_double_s_deit_tiny_patch16_224.json"
+      }
+    }
+  },
+  "levit_128": {
+    "enabled": true,
+    "arch": "levit_128",
+    "num_classes": 100,
+    "pth": "/home/a/709Docker/kt3_resource/models/backbone_levit_128_pretrained.pth",
+    "clients": {
+      "ft": {
+        "device_key": "device_0",
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_fvs/cut_f_s_levit_128.json"
+      },
+      "ascend": {
+        "device_key": "device_0",
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_svs/cut_levit_128.json"
+      },
+      "mixed": {
+        "device_keys": [
+          "device_0",
+          "device_1"
+        ],
+        "clients": [
+          {
+            "type": "ft",
+            "device_key": "device_0"
+          },
+          {
+            "type": "ascend",
+            "device_key": "device_1"
+          }
+        ],
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_2v1_fsVs/cut_double_s_levit_128.json"
+      }
+    }
+  },
+  "lightvgg11": {
+    "enabled": true,
+    "arch": "lightvgg11",
+    "num_classes": 100,
+    "pth": "/home/a/709Docker/kt3_resource/models/backbone_lightvgg11_pretrained.pth",
+    "clients": {
+      "ft": {
+        "device_key": "device_0",
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_fvs/cut_f_s_lightvg11.json"
+      },
+      "ascend": {
+        "device_key": "device_0",
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_svs/cut_lightvgg11.json"
+      },
+      "mixed": {
+        "device_keys": [
+          "device_0",
+          "device_1"
+        ],
+        "clients": [
+          {
+            "type": "ft",
+            "device_key": "device_0"
+          },
+          {
+            "type": "ascend",
+            "device_key": "device_1"
+          }
+        ],
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_2v1_fsVs/cut_double_s_lightvgg11.json"
+      }
+    }
+  },
+  "mobilenet_v2": {
+    "enabled": true,
+    "arch": "mobilenet_v2",
+    "num_classes": 100,
+    "pth": "/home/a/709Docker/kt3_resource/models/backbone_mobilenet_v2_pretrained.pth",
+    "clients": {
+      "ft": {
+        "device_key": "device_0",
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_fvs/cut_f_s_mobilenet_v2.json"
+      },
+      "ascend": {
+        "device_key": "device_0",
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_svs/cut_mobilenet_v2.json"
+      },
+      "mixed": {
+        "device_keys": [
+          "device_0",
+          "device_1"
+        ],
+        "clients": [
+          {
+            "type": "ft",
+            "device_key": "device_0"
+          },
+          {
+            "type": "ascend",
+            "device_key": "device_1"
+          }
+        ],
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_2v1_fsVs/cut_double_s_mobilenet_v2.json"
+      }
+    }
+  },
+  "mobilenet_v3_large": {
+    "enabled": true,
+    "arch": "mobilenet_v3_large",
+    "num_classes": 100,
+    "pth": "/home/a/709Docker/kt3_resource/models/backbone_mobilenet_v3_large_pretrained.pth",
+    "clients": {
+      "ft": {
+        "device_key": "device_0",
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_fvs/cut_f_s_mobilenet_v3_large.json"
+      },
+      "ascend": {
+        "device_key": "device_0",
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_svs/cut_mobilenet_v3_large.json"
+      },
+      "mixed": {
+        "device_keys": [
+          "device_0",
+          "device_1"
+        ],
+        "clients": [
+          {
+            "type": "ft",
+            "device_key": "device_0"
+          },
+          {
+            "type": "ascend",
+            "device_key": "device_1"
+          }
+        ],
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_2v1_fsVs/cut_double_s_mobilenet_v3_large.json"
+      }
+    }
+  },
+  "mobilevgg": {
+    "enabled": true,
+    "arch": "mobilevgg",
+    "num_classes": 100,
+    "pth": "/home/a/709Docker/kt3_resource/models/backbone_mobilevgg_pretrained.pth",
+    "clients": {
+      "ft": {
+        "device_key": "device_0",
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_fvs/cut_f_s_mobilevgg.json"
+      },
+      "ascend": {
+        "device_key": "device_0",
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_svs/cut_mobilevgg.json"
+      },
+      "mixed": {
+        "device_keys": [
+          "device_0",
+          "device_1"
+        ],
+        "clients": [
+          {
+            "type": "ft",
+            "device_key": "device_0"
+          },
+          {
+            "type": "ascend",
+            "device_key": "device_1"
+          }
+        ],
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_2v1_fsVs/cut_double_s_mobilevgg.json"
+      }
+    }
+  },
+  "resnet18": {
+    "enabled": true,
+    "arch": "resnet18",
+    "num_classes": 100,
+    "pth": "/home/a/709Docker/kt3_resource/models/backbone_resnet18_pretrained.pth",
+    "clients": {
+      "ft": {
+        "device_key": "device_0",
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_fvs/cut_f_s_resnet18.json"
+      },
+      "ascend": {
+        "device_key": "device_0",
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_svs/cut_resnet18.json"
+      },
+      "mixed": {
+        "device_keys": [
+          "device_0",
+          "device_1"
+        ],
+        "clients": [
+          {
+            "type": "ft",
+            "device_key": "device_0"
+          },
+          {
+            "type": "ascend",
+            "device_key": "device_1"
+          }
+        ],
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_2v1_fsVs/cut_double_s_resnet18.json"
+      }
+    }
+  },
+  "resnet50": {
+    "enabled": true,
+    "arch": "resnet50",
+    "num_classes": 100,
+    "pth": "/home/a/709Docker/kt3_resource/models/backbone_resnet50_pretrained.pth",
+    "clients": {
+      "ft": {
+        "device_key": "device_0",
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_fvs/cut_f_s_resnet50.json"
+      },
+      "ascend": {
+        "device_key": "device_0",
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_svs/cut_resnet50.json"
+      },
+      "mixed": {
+        "device_keys": [
+          "device_0",
+          "device_1"
+        ],
+        "clients": [
+          {
+            "type": "ft",
+            "device_key": "device_0"
+          },
+          {
+            "type": "ascend",
+            "device_key": "device_1"
+          }
+        ],
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_2v1_fsVs/cut_double_s_resnet50.json"
+      }
+    }
+  },
+  "resnet101": {
+    "enabled": true,
+    "arch": "resnet101",
+    "num_classes": 100,
+    "pth": "/home/a/709Docker/kt3_resource/models/backbone_resnet101_pretrained.pth",
+    "clients": {
+      "ft": {
+        "device_key": "device_0",
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_fvs/cut_f_s_resnet101.json"
+      },
+      "ascend": {
+        "device_key": "device_0",
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_svs/cut_resnet101.json"
+      },
+      "mixed": {
+        "device_keys": [
+          "device_0",
+          "device_1"
+        ],
+        "clients": [
+          {
+            "type": "ft",
+            "device_key": "device_0"
+          },
+          {
+            "type": "ascend",
+            "device_key": "device_1"
+          }
+        ],
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_2v1_fsVs/cut_double_s_resnet101.json"
+      }
+    }
+  },
+  "vgg11": {
+    "enabled": false,
+    "arch": "vgg11",
+    "num_classes": 100,
+    "pth": "/home/a/709Docker/kt3_resource/models/backbone_vgg11_pretrained.pth",
+    "clients": {
+      "ascend": {
+        "device_key": "device_0",
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_svs/cut_vgg11.json"
+      },
+      "mixed": {
+        "device_keys": [
+          "device_0",
+          "device_1"
+        ],
+        "clients": [
+          {
+            "type": "ft",
+            "device_key": "device_0"
+          },
+          {
+            "type": "ascend",
+            "device_key": "device_1"
+          }
+        ],
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_2v1_fsVs/cut_double_s_vgg11.json"
+      }
+    },
+    "disabled_reason": "missing checkpoint pth in /home/a/709Docker/kt3_resource/models"
+  },
+  "vgg13": {
+    "enabled": false,
+    "arch": "vgg13",
+    "num_classes": 100,
+    "pth": "/home/a/709Docker/kt3_resource/models/backbone_vgg13_pretrained.pth",
+    "clients": {
+      "ascend": {
+        "device_key": "device_0",
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_svs/cut_vgg13.json"
+      },
+      "mixed": {
+        "device_keys": [
+          "device_0",
+          "device_1"
+        ],
+        "clients": [
+          {
+            "type": "ft",
+            "device_key": "device_0"
+          },
+          {
+            "type": "ascend",
+            "device_key": "device_1"
+          }
+        ],
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_2v1_fsVs/cut_double_s_vgg13.json"
+      }
+    },
+    "disabled_reason": "missing checkpoint pth in /home/a/709Docker/kt3_resource/models"
+  },
+  "vgg16": {
+    "enabled": false,
+    "arch": "vgg16",
+    "num_classes": 100,
+    "pth": "/home/a/709Docker/kt3_resource/models/backbone_vgg16_pretrained.pth",
+    "clients": {
+      "ascend": {
+        "device_key": "device_0",
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_svs/cut_vgg16.json"
+      },
+      "mixed": {
+        "device_keys": [
+          "device_0",
+          "device_1"
+        ],
+        "clients": [
+          {
+            "type": "ft",
+            "device_key": "device_0"
+          },
+          {
+            "type": "ascend",
+            "device_key": "device_1"
+          }
+        ],
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_2v1_fsVs/cut_double_s_vgg16.json"
+      }
+    },
+    "disabled_reason": "missing checkpoint pth in /home/a/709Docker/kt3_resource/models"
+  },
+  "vgg19": {
+    "enabled": false,
+    "arch": "vgg19",
+    "num_classes": 100,
+    "pth": "/home/a/709Docker/kt3_resource/models/backbone_vgg19_pretrained.pth",
+    "clients": {
+      "ascend": {
+        "device_key": "device_0",
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_svs/cut_vgg19.json"
+      },
+      "mixed": {
+        "device_keys": [
+          "device_0",
+          "device_1"
+        ],
+        "clients": [
+          {
+            "type": "ft",
+            "device_key": "device_0"
+          },
+          {
+            "type": "ascend",
+            "device_key": "device_1"
+          }
+        ],
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_2v1_fsVs/cut_double_s_vgg19.json"
+      }
+    },
+    "disabled_reason": "missing checkpoint pth in /home/a/709Docker/kt3_resource/models"
+  },
+  "yolo5": {
+    "enabled": true,
+    "arch": "yolo5",
+    "num_classes": 100,
+    "pth": "/home/a/709Docker/kt3_resource/models/backbone_yolov5_pretrained.pth",
+    "clients": {
+      "ft": {
+        "device_key": "device_0",
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_fvs/cut_f_s_yolo5.json"
+      },
+      "ascend": {
+        "device_key": "device_0",
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_svs/cut_yolov5.json"
+      },
+      "mixed": {
+        "device_keys": [
+          "device_0",
+          "device_1"
+        ],
+        "clients": [
+          {
+            "type": "ft",
+            "device_key": "device_0"
+          },
+          {
+            "type": "ascend",
+            "device_key": "device_1"
+          }
+        ],
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_2v1_fsVs/cut_double_s_yolov5.json"
+      }
+    }
+  },
+  "yolo8": {
+    "enabled": true,
+    "arch": "yolo8",
+    "num_classes": 100,
+    "pth": "/home/a/709Docker/kt3_resource/models/backbone_yolov8_pretrained.pth",
+    "clients": {
+      "ft": {
+        "device_key": "device_0",
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_fvs/cut_f_s_yolo8.json"
+      },
+      "ascend": {
+        "device_key": "device_0",
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_svs/cut_yolov8.json"
+      },
+      "mixed": {
+        "device_keys": [
+          "device_0",
+          "device_1"
+        ],
+        "clients": [
+          {
+            "type": "ft",
+            "device_key": "device_0"
+          },
+          {
+            "type": "ascend",
+            "device_key": "device_1"
+          }
+        ],
+        "cut_json": "/home/a/709Docker/kt3_resource/cut_json_2v1_fsVs/cut_double_s_yolov8.json"
+      }
+    }
+  }
+}

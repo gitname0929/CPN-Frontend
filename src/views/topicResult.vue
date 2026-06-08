@@ -116,44 +116,187 @@
       width="700px"
       :close-on-click-modal="true"
       append-to-body
-      @close="handleDialogClose"
+      custom-class="topic-run-dialog"
+      :before-close="handleDialogClose"
     >
       <el-form :model="taskConfig" label-width="100px" size="small">
-        <el-form-item label="CPU核心数">
-          <el-input-number v-model="taskConfig.cpu" :min="0.5" :step="0.5" />
+        <el-form-item label="课题">
+          <el-select v-model="selectedTopic" placeholder="请选择课题" style="width: 100%;">
+            <el-option
+              v-for="topic in topicList"
+              :key="topic.id"
+              :label="topic.name"
+              :value="topic.id"
+            />
+          </el-select>
         </el-form-item>
-        <el-form-item label="内存大小(GB)">
-          <el-input-number v-model="taskConfig.memory" :min="1" :step="1" />
-        </el-form-item>
-        <el-form-item label="实例数量">
-          <el-input-number v-model="taskConfig.instances" :min="1" :max="10" />
-        </el-form-item>
-        <el-form-item label="额外参数">
-          <el-input v-model="taskConfig.extraArgs" placeholder="例如：--verbose --output=result.txt" />
+
+        <template v-if="normalizedSelectedTopic === 1">
+          <el-form-item label="硬件平台">
+            <el-select v-model="taskConfig.platform" placeholder="请选择硬件平台" style="width: 100%;">
+              <el-option label="昇腾" value="ascend" />
+              <el-option label="飞腾" value="feiteng" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="运行模型">
+            <el-select
+              v-model="taskConfig.models"
+              multiple
+              collapse-tags
+              placeholder="请选择要运行的模型"
+              style="width: 100%;"
+              @change="onModelsChange"
+            >
+              <el-option label="全部 (all)" value="all" />
+              <el-option
+                v-for="model in modelOptions"
+                :key="model"
+                :label="model"
+                :value="model"
+              />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="执行轮数">
+            <el-input-number
+              v-model="taskConfig.rounds"
+              :min="1"
+              :max="9999"
+              :step="1"
+              style="width: 100%;"
+            />
+          </el-form-item>
+        </template>
+
+        <template v-else-if="normalizedSelectedTopic === 2">
+          <el-form-item label="板子类型">
+            <el-select v-model="taskConfig.board" placeholder="请选择板子类型" style="width: 100%;">
+              <el-option label="昇腾 (st)" value="st" />
+              <el-option label="飞腾 (ft)" value="ft" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="数据集分组">
+            <el-select v-model="taskConfig.dataset_group" placeholder="请选择数据集分组" style="width: 100%;">
+              <el-option label="google (1-5号任务)" value="google" />
+              <el-option label="huawei (6-10号任务)" value="huawei" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="负载等级">
+            <el-select v-model="taskConfig.load_level" placeholder="请选择负载等级" style="width: 100%;">
+              <el-option label="L (低负载)" value="L" />
+              <el-option label="H (高负载)" value="H" />
+            </el-select>
+          </el-form-item>
+        </template>
+
+        <template v-else-if="normalizedSelectedTopic === 3">
+          <el-form-item label="运行场景">
+            <el-select v-model="taskConfig.scenario" placeholder="请选择运行场景" style="width: 100%;">
+              <el-option label="昇腾 server / 昇腾 client" value="ascend_ascend" />
+              <el-option label="昇腾 server / 飞腾 client" value="ascend_feiteng" />
+              <el-option label="昇腾 server / 飞腾 client + 昇腾 client" value="ascend_mixed" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="运行模型">
+            <el-select
+              v-model="taskConfig.models"
+              multiple
+              collapse-tags
+              placeholder="请选择运行模型"
+              style="width: 100%;"
+              @change="onTopic3ModelsChange"
+            >
+              <el-option label="全部 (all)" value="all" />
+              <el-option
+                v-for="model in topic3ModelOptions"
+                :key="model"
+                :label="model"
+                :value="model"
+              />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="统计次数">
+            <el-input-number
+              v-model="taskConfig.numTasks"
+              :min="1"
+              :max="1000"
+              :step="1"
+              style="width: 100%;"
+            />
+          </el-form-item>
+          <el-form-item label="服务端口">
+            <el-input-number
+              v-model="taskConfig.port"
+              :min="1024"
+              :max="65535"
+              :step="1"
+              style="width: 100%;"
+            />
+          </el-form-item>
+          <el-alert
+            title="昇腾 server IP: 192.168.31.154；昇腾 client IP: 192.168.31.247；飞腾 client 为当前机器。支持 1飞1昇双客户端；默认额外预热 5 次，预热不计入统计。"
+            type="info"
+            :closable="false"
+            show-icon
+          />
+        </template>
+
+        <el-form-item v-else>
+          <el-alert
+            title="该课题的运行配置暂未开放"
+            type="info"
+            :closable="false"
+            show-icon
+          />
         </el-form-item>
       </el-form>
 
-      <!-- 实时输出控制台 -->
-      <div class="output-console" v-if="taskRunning || outputLogs.length > 0">
-        <div class="console-header">
-          <span>运行输出</span>
-          <el-button type="text" size="small" @click="clearOutput">清空</el-button>
-        </div>
-        <div class="console-body">
-          <div v-for="(log, idx) in outputLogs" :key="idx" class="log-line">
-            <span class="log-time">{{ log.time }}</span>
-            <span :class="['log-text', log.type]">{{ log.text }}</span>
+      <!-- 执行进度 + 执行结果（各自固定高度，独立滚动） -->
+      <div class="run-output-area" v-if="taskRunning || outputLogs.length > 0 || resultRows.length > 0 || taskError">
+        <div class="output-console">
+          <div class="console-header">
+            <span>执行进度</span>
+            <el-button type="text" size="small" @click="clearOutput">清空</el-button>
           </div>
-          <div v-if="finalResult" class="final-result">
-            <el-divider />
-            <div class="result-title">最终结果：</div>
-            <pre>{{ finalResult }}</pre>
+          <div class="console-body" ref="consoleBody">
+            <div v-if="outputLogs.length === 0" class="log-placeholder">等待输出...</div>
+            <div v-for="(log, idx) in outputLogs" :key="idx" class="log-line">
+              <span class="log-time">{{ log.time }}</span>
+              <span :class="['log-text', log.type]">{{ log.text }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="result-panel" v-if="taskRunning || taskFinished || resultRows.length > 0 || taskError">
+          <div class="console-header">
+            <span>执行结果</span>
+          </div>
+          <div class="result-body" ref="resultBody">
+            <div v-if="resultRows.length > 0" class="result-table-wrap">
+              <table class="result-table">
+                <thead>
+                  <tr>
+                    <th v-for="column in resultColumns" :key="column">{{ column }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(row, index) in resultRows" :key="index">
+                    <td v-for="column in resultColumns" :key="column">{{ formatResultValue(row[column]) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div v-else-if="taskError" class="result-error">
+              <div class="result-title error-text">执行失败</div>
+              <pre>{{ taskError }}</pre>
+            </div>
+            <div v-else-if="taskFinished" class="log-placeholder">任务已完成，暂无结果数据</div>
+            <div v-else class="log-placeholder">等待结果...</div>
           </div>
         </div>
       </div>
 
       <span slot="footer">
-        <el-button @click="runDialogVisible = false">取消</el-button>
+        <el-button @click="requestCloseDialog">取消</el-button>
         <el-button type="primary" :loading="taskRunning" @click="handleRunTask">
           {{ taskRunning ? '运行中...' : '运行' }}
         </el-button>
@@ -169,6 +312,12 @@
 <script>
 import echarts from 'echarts';
 import { fetchTopicData, loadFiguresConfig } from '@/api/topicApi';
+import {
+  runTopicTask,
+  getTopicTaskResult,
+  cancelTopicTask,
+  createTopicTaskStream,
+} from '@/api/taskApi';
 import {
   buildTopicsFromConfig,
   buildChartOptionsForTopic,
@@ -187,20 +336,74 @@ export default {
 		loadedChartData: null,
 		loadedTableData: [],
 
-// 新增：任务选择与运行
-    selectedTopic: null,
+// 任务选择与运行
+    topicList: [
+      { id: 1, name: '课题一' },
+      { id: 2, name: '课题二' },
+      { id: 3, name: '课题三' },
+      { id: 4, name: '课题四' },
+    ],
+    modelOptions: [
+      'deit_tiny_patch_16_224',
+      'levit_128',
+      'mobilenet_v2',
+      'mobilenet_v3_large',
+      'resnet101',
+      'resnet18',
+      'resnet50',
+      'mobilevgg',
+      'lightvgg11',
+      'yolo5s',
+      'yolov8n',
+      'sampler_cpu',
+      'sampler_ram',
+      'sampler_gpu',
+      'sampler_internet',
+      'sampler_power',
+      'plot_cpu',
+      'plot_ram',
+      'plot_gpu',
+      'plot_internet',
+      'plot_power',
+    ],
+    topic3ModelOptions: [
+      'deit_tiny_patch_16_224',
+      'levit_128',
+      'mobilenet_v2',
+      'mobilenet_v3_large',
+      'resnet101',
+      'resnet18',
+      'resnet50',
+      'mobilevgg',
+      'lightvgg11',
+      'yolov5',
+      'yolov8',
+    ],
+    selectedTopic: 1,
     runLoading: false,
     runDialogVisible: false,
     taskRunning: false,
     taskConfig: {
-      cpu: 1,
-      memory: 2,
-      instances: 1,
-      extraArgs: ''
+      platform: '',
+      models: [],
+      rounds: 1,
+      board: '',
+      dataset_group: '',
+      load_level: '',
+      scenario: '',
+      model: 'resnet50',
+      numTasks: 100,
+      port: 9999,
     },
-    outputLogs: [],      // 输出日志数组
-    finalResult: '',     // 最终结果
-    abortController: null // 用于中断模拟请求
+    outputLogs: [],
+    resultRows: [],
+    resultColumns: [],
+    taskFinished: false,
+    taskError: '',
+    currentTaskId: null,
+    eventSource: null,
+    resultPollTimer: null,
+    abortController: null
     };
   },
   computed: {
@@ -231,7 +434,10 @@ export default {
     currentTableData() {
         return this.loadedTableData || [];
     },
-
+    normalizedSelectedTopic() {
+        const topic = Number(this.selectedTopic);
+        return Number.isFinite(topic) ? topic : this.selectedTopic;
+    },
    
   },
   watch: {
@@ -243,16 +449,6 @@ export default {
         }
     },
 
-    //新
-    // 当课题列表加载完成后，默认选中第一个课题
-    topics: {
-      handler(newTopics) {
-        if (newTopics.length && !this.selectedTopic) {
-          this.selectedTopic = newTopics[0].id;
-        }
-      },
-      immediate: true
-    }
   },
 
 
@@ -272,6 +468,7 @@ export default {
   },
  beforeDestroy() {
     window.removeEventListener('resize', this.handleResize);
+    this.stopTaskWatchers();
     if (this.chartInstance) {
         this.chartInstance.dispose();
         this.chartInstance = null;
@@ -474,30 +671,166 @@ export default {
     },
 
 
-       // ---------- 新增：运行相关方法 ----------
-    openRunDialog() {
-      if (!this.selectedTopic) {
-        this.$message.warning('请先选择课题');
+    getDefaultTaskConfig() {
+      return {
+        platform: '',
+        models: [],
+        rounds: 1,
+        board: '',
+        dataset_group: '',
+        load_level: '',
+        scenario: '',
+        model: 'resnet50',
+        numTasks: 100,
+        port: 9999,
+      };
+    },
+
+    onModelsChange(selected) {
+      if (!selected.includes('all')) return;
+      if (selected.length === 1) {
+        this.taskConfig.models = ['all', ...this.modelOptions];
         return;
       }
-      // 重置弹窗状态
-      this.outputLogs = [];
-      this.finalResult = '';
-      this.taskRunning = false;
-      // 重置配置为默认值
-      this.taskConfig = {
-        cpu: 1,
-        memory: 2,
-        instances: 1,
-        extraArgs: ''
+      this.taskConfig.models = selected.filter((item) => item !== 'all');
+    },
+
+    onTopic3ModelsChange(selected) {
+      if (!selected.includes('all')) return;
+      if (selected.length === 1) {
+        this.taskConfig.models = ['all', ...this.topic3ModelOptions];
+        return;
+      }
+      this.taskConfig.models = selected.filter((item) => item !== 'all');
+    },
+
+    validateTaskConfig() {
+      if (!this.selectedTopic) {
+        this.$message.warning('请先选择课题');
+        return false;
+      }
+      const topicId = this.normalizedSelectedTopic;
+      if (topicId === 2) {
+        if (!this.taskConfig.board) {
+          this.$message.warning('请选择板子类型');
+          return false;
+        }
+        if (!this.taskConfig.dataset_group) {
+          this.$message.warning('请选择数据集分组');
+          return false;
+        }
+        if (!this.taskConfig.load_level) {
+          this.$message.warning('请选择负载等级');
+          return false;
+        }
+        return true;
+      }
+      if (topicId === 3) {
+        if (!this.taskConfig.scenario) {
+          this.$message.warning('请选择运行场景');
+          return false;
+        }
+        if (!this.taskConfig.models.length) {
+          this.$message.warning('请选择运行模型');
+          return false;
+        }
+        if (!this.taskConfig.numTasks || this.taskConfig.numTasks < 1) {
+          this.$message.warning('统计次数至少为 1');
+          return false;
+        }
+        if (!this.taskConfig.port || this.taskConfig.port < 1024) {
+          this.$message.warning('请填写有效服务端口');
+          return false;
+        }
+        return true;
+      }
+      if (topicId !== 1) {
+        this.$message.info('该课题运行配置暂未开放');
+        return false;
+      }
+      if (!this.taskConfig.platform) {
+        this.$message.warning('请选择硬件平台');
+        return false;
+      }
+      if (!this.taskConfig.models.length) {
+        this.$message.warning('请至少选择一个模型');
+        return false;
+      }
+      if (!this.taskConfig.rounds || this.taskConfig.rounds < 1) {
+        this.$message.warning('执行轮数至少为 1');
+        return false;
+      }
+      return true;
+    },
+
+    buildRunPayload() {
+      const topicId = this.normalizedSelectedTopic;
+      if (topicId === 2) {
+        return {
+          topicId,
+          board: this.taskConfig.board,
+          dataset_group: this.taskConfig.dataset_group,
+          load_level: this.taskConfig.load_level,
+        };
+      }
+      if (topicId === 3) {
+        const models = this.taskConfig.models.includes('all')
+          ? [...this.topic3ModelOptions]
+          : [...this.taskConfig.models];
+        return {
+          topicId,
+          scenario: this.taskConfig.scenario,
+          models,
+          numTasks: this.taskConfig.numTasks,
+          port: this.taskConfig.port,
+        };
+      }
+      const models = this.taskConfig.models.includes('all')
+        ? ['all']
+        : [...this.taskConfig.models];
+      return {
+        topicId,
+        platform: this.taskConfig.platform,
+        models,
+        rounds: this.taskConfig.rounds,
       };
+    },
+
+    openRunDialog() {
+      this.stopTaskWatchers();
+      this.outputLogs = [];
+      this.resultRows = [];
+      this.resultColumns = [];
+      this.taskFinished = false;
+      this.taskError = '';
+      this.taskRunning = false;
+      this.taskConfig = this.getDefaultTaskConfig();
       this.runDialogVisible = true;
+    },
+
+    stopTaskWatchers() {
+      if (this.eventSource) {
+        this.eventSource.close();
+        this.eventSource = null;
+      }
+      if (this.resultPollTimer) {
+        clearTimeout(this.resultPollTimer);
+        this.resultPollTimer = null;
+      }
+    },
+
+    formatResultValue(value) {
+      if (value === null || value === undefined || value === '') return '-';
+      return value;
     },
 
     // 清空输出控制台
     clearOutput() {
       this.outputLogs = [];
-      this.finalResult = '';
+      this.resultRows = [];
+      this.resultColumns = [];
+      this.taskFinished = false;
+      this.taskError = '';
     },
 
     // 添加一条日志
@@ -507,122 +840,167 @@ export default {
         text: text,
         type: type
       });
-      // 自动滚动到底部
       this.$nextTick(() => {
-        const consoleBody = document.querySelector('.console-body');
+        const consoleBody = this.$refs.consoleBody;
         if (consoleBody) consoleBody.scrollTop = consoleBody.scrollHeight;
       });
     },
 
-    // 模拟执行任务（可替换为真实后端调用）
-    async mockRunTask(config) {
-      const topic = this.topics.find(t => t.id === this.selectedTopic);
-      const topicName = topic ? topic.name : `课题${this.selectedTopic}`;
-      this.addLog(`[开始] 正在为课题「${topicName}」执行任务...`);
-      this.addLog(`[配置] CPU: ${config.cpu}核, 内存: ${config.memory}GB, 实例数: ${config.instances}`);
-      if (config.extraArgs) {
-        this.addLog(`[参数] 额外参数: ${config.extraArgs}`);
+    applyTaskResult(result) {
+      if (result.status === 'completed') {
+        this.taskFinished = true;
+        this.resultRows = this.normalizeTaskResultRows(result);
+        this.resultColumns = this.buildResultColumns(this.resultRows);
+        this.taskError = '';
+        this.addLog(`任务完成，共 ${this.resultRows.length} 条结果`, 'success');
+        this.$nextTick(() => this.scrollResultToTop());
+        return;
       }
-      
-      // 模拟执行步骤
-      await this.sleep(1000);
-      this.addLog(`[步骤1] 连接集群调度器...`, 'info');
-      await this.sleep(800);
-      this.addLog(`[步骤2] 分配计算资源...`, 'info');
-      await this.sleep(1200);
-      this.addLog(`[步骤3] 启动容器实例...`, 'info');
-      await this.sleep(1500);
-      this.addLog(`[步骤4] 运行课题脚本...`, 'info');
-      
-      // 模拟脚本输出
-      const outputs = [
-        "Loading model...",
-        "Processing data...",
-        "Epoch 1/10: loss=0.234",
-        "Epoch 2/10: loss=0.187",
-        "Epoch 3/10: loss=0.152",
-        "Validation accuracy: 94.7%"
-      ];
-      for (const line of outputs) {
-        await this.sleep(600);
-        this.addLog(`[脚本] ${line}`, 'stdout');
+      if (result.status === 'failed') {
+        this.taskFinished = true;
+        this.resultRows = this.normalizeTaskResultRows(result);
+        this.resultColumns = this.buildResultColumns(this.resultRows);
+        this.taskError = result.error || '任务执行失败';
+        this.addLog(this.taskError, 'error');
       }
-      
-      await this.sleep(1000);
-      this.addLog(`[完成] 任务执行成功！`, 'success');
-      const resultMsg = `课题「${topicName}」运行完成\n最终准确率: 94.7%\n输出文件: /output/result_${Date.now()}.txt`;
-      this.finalResult = resultMsg;
-      this.addLog(`[结果] ${resultMsg}`, 'result');
     },
 
-    sleep(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms));
+    normalizeTaskResultRows(result) {
+      const rows = result.rows || result.resultRows || result.output || result.result || [];
+      const parsedRows = Array.isArray(rows) ? rows : [];
+      if (this.normalizedSelectedTopic === 2 || this.normalizedSelectedTopic === 3) {
+        return parsedRows.map((row) => ({ ...row }));
+      }
+      return parsedRows.map((row) => ({
+        '模型': this.pickResultValue(row, ['model', 'Model', '模型']) || '',
+        '平均冷到热时间(s)': this.pickResultValue(row, ['avgColdToHot', 'avg_cold_start_sec', '平均冷到热时间(s)']),
+        '平均暖到热时间(s)': this.pickResultValue(row, ['avgWarmToHot', 'avg_warm_start_sec', '平均暖到热时间(s)']),
+        '提升比值(%)': this.pickResultValue(row, ['improvementRatio', 'theta_percent', '提升比值(%)']),
+      }));
     },
 
-    // 实际调用后端（替换 mockRunTask）
-    async realRunTask(config) {
-      try {
-        // 使用 axios 或 this.$http 发送请求
-        const response = await this.$http.post('/api/tasks/run', {
-          topicId: this.selectedTopic,
-          parameters: config
+    buildResultColumns(rows) {
+      if (!rows.length) return [];
+      const columns = [];
+      rows.forEach((row) => {
+        Object.keys(row).forEach((key) => {
+          if (!columns.includes(key)) columns.push(key);
         });
-        const taskId = response.data.taskId;
-        // 轮询获取输出（或使用 WebSocket/SSE）
-        this.addLog(`任务已提交，ID: ${taskId}`);
-        // 示例：轮询结果接口
-        const pollInterval = setInterval(async () => {
-          const res = await this.$http.get(`/api/tasks/${taskId}/status`);
-          if (res.data.logs) {
-            res.data.logs.forEach(log => this.addLog(log, 'stdout'));
-          }
-          if (res.data.status === 'completed') {
-            this.finalResult = res.data.result;
-            clearInterval(pollInterval);
-            this.taskRunning = false;
-          } else if (res.data.status === 'failed') {
-            this.addLog(`执行失败: ${res.data.error}`, 'error');
-            clearInterval(pollInterval);
-            this.taskRunning = false;
-          }
-        }, 1000);
-      } catch (error) {
-        this.addLog(`请求失败: ${error.message}`, 'error');
-        this.taskRunning = false;
-      }
+      });
+      return columns;
     },
 
-    // 处理运行按钮点击
+    pickResultValue(row, keys) {
+      for (const key of keys) {
+        if (Object.prototype.hasOwnProperty.call(row, key)) {
+          return row[key];
+        }
+      }
+      return undefined;
+    },
+
+    scrollResultToTop() {
+      const resultBody = this.$refs.resultBody;
+      if (resultBody) resultBody.scrollTop = 0;
+    },
+
+    pollTaskResult(taskId) {
+      getTopicTaskResult(taskId)
+        .then((result) => {
+          if (result.status === 'running') {
+            this.resultPollTimer = setTimeout(() => this.pollTaskResult(taskId), 1500);
+            return;
+          }
+          this.applyTaskResult(result);
+          this.taskRunning = false;
+          this.stopTaskWatchers();
+        })
+        .catch((error) => {
+          this.taskError = error.message || '获取任务结果失败';
+          this.addLog(this.taskError, 'error');
+          this.taskRunning = false;
+          this.stopTaskWatchers();
+        });
+    },
+
     async handleRunTask() {
       if (this.taskRunning) return;
+      if (!this.validateTaskConfig()) return;
+
+      const payload = this.buildRunPayload();
       this.taskRunning = true;
       this.outputLogs = [];
-      this.finalResult = '';
-      
-      // 这里选择使用模拟执行（便于测试弹窗效果），实际使用请改为 realRunTask
-      await this.mockRunTask(this.taskConfig);
-      
-      // 如果使用真实后端，调用 this.realRunTask(this.taskConfig)
-      this.taskRunning = false;
+      this.resultRows = [];
+      this.resultColumns = [];
+      this.taskFinished = false;
+      this.taskError = '';
+      this.stopTaskWatchers();
+
+      if (payload.topicId === 2) {
+        const boardLabel = payload.board === 'st' ? '昇腾' : '飞腾';
+        this.addLog(`[配置] 课题二 / ${boardLabel} / ${payload.dataset_group} / ${payload.load_level}`, 'info');
+      } else if (payload.topicId === 3) {
+        const scenarioMap = {
+          ascend_ascend: '昇腾 server / 昇腾 client',
+          ascend_feiteng: '昇腾 server / 飞腾 client',
+          ascend_mixed: '昇腾 server / 飞腾 client + 昇腾 client',
+        };
+        const scenarioLabel = scenarioMap[payload.scenario] || payload.scenario;
+        this.addLog(`[配置] 课题三 / ${scenarioLabel} / ${payload.models.join(', ')} / 统计 ${payload.numTasks} 次 / 预热 5 次`, 'info');
+      } else {
+        const platformLabel = payload.platform === 'ascend' ? '昇腾' : '飞腾';
+        this.addLog(`[配置] 课题一 / ${platformLabel} / 轮数 ${payload.rounds}`, 'info');
+        this.addLog(`[模型] ${payload.models.join(', ')}`, 'info');
+      }
+
+      try {
+        const { taskId } = await runTopicTask(payload);
+        this.currentTaskId = taskId;
+        this.addLog(`[任务] 已启动，ID: ${taskId}`, 'info');
+
+        this.eventSource = createTopicTaskStream(taskId, (logData) => {
+          this.addLog(logData.message, logData.type || 'stdout');
+        });
+        this.eventSource.onerror = () => {
+          if (this.eventSource) {
+            this.eventSource.close();
+            this.eventSource = null;
+          }
+        };
+
+        this.pollTaskResult(taskId);
+      } catch (error) {
+        this.taskError = error.message || '启动任务失败';
+        this.taskFinished = true;
+        this.addLog(this.taskError, 'error');
+        this.taskRunning = false;
+        this.stopTaskWatchers();
+      }
     },
 
-    handleDialogClose() {
-      console.log('关闭弹窗');
-      // 如果任务还在运行，提示关闭会中断
+    requestCloseDialog() {
+      this.handleDialogClose(() => {
+        this.runDialogVisible = false;
+      });
+    },
+
+    handleDialogClose(done) {
       if (this.taskRunning) {
         this.$confirm('任务正在运行，关闭弹窗将中断任务，是否继续？', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          if (this.abortController) {
-            this.abortController.abort();
+          if (this.currentTaskId) {
+            cancelTopicTask(this.currentTaskId).catch(() => {});
           }
+          this.stopTaskWatchers();
           this.taskRunning = false;
-          this.runDialogVisible = false;
+          if (typeof done === 'function') done();
         }).catch(() => {});
       } else {
-        this.runDialogVisible = false;
+        this.stopTaskWatchers();
+        if (typeof done === 'function') done();
       }
     },
 
@@ -799,16 +1177,44 @@ export default {
 
 
 
-  // 弹窗内输出控制台样式
-  .output-console {
-    margin-top: 16px;
-    border: 1px solid #e4e7ed;
+}
+</style>
+
+<!-- 弹窗 append-to-body 后不在 #topic-result 内，样式须单独写 -->
+<style lang="scss">
+.topic-run-dialog {
+  .el-dialog__body {
+    max-height: calc(100vh - 200px);
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding-bottom: 16px;
+  }
+
+  .run-output-area {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    .log-placeholder {
+      color: #858585;
+      font-style: italic;
+      font-size: 12px;
+      padding: 4px 0;
+    }
+  }
+
+  .output-console,
+  .result-panel {
+    border: 1px solid #dcdfe6;
     border-radius: 4px;
     background: #1e1e1e;
-    
+    overflow: hidden;
+    flex-shrink: 0;
+
     .console-header {
       padding: 8px 12px;
-      border-bottom: 1px solid #e4e7ed;
+      border-bottom: 1px solid #dcdfe6;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -816,48 +1222,99 @@ export default {
       color: #ddd;
       font-weight: bold;
     }
-    
-    .console-body {
-      height: 280px;
-      overflow-y: auto;
-      padding: 8px 12px;
-      font-family: 'Consolas', monospace;
+  }
+
+  .output-console .console-body {
+    height: 200px;
+    max-height: 200px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    padding: 8px 12px;
+    box-sizing: border-box;
+    font-family: Consolas, monospace;
+    font-size: 12px;
+    color: #d4d4d4;
+
+    .log-line {
+      margin-bottom: 4px;
+      line-height: 1.4;
+      word-break: break-all;
+
+      .log-time {
+        color: #858585;
+        margin-right: 12px;
+        white-space: nowrap;
+      }
+
+      .log-text.info { color: #d4d4d4; }
+      .log-text.stdout { color: #ce9178; }
+      .log-text.error { color: #f48771; }
+      .log-text.success { color: #4ec9b0; }
+      .log-text.result { color: #ffd700; font-weight: bold; }
+    }
+  }
+
+  .result-panel .result-body {
+    height: 160px;
+    max-height: 160px;
+    overflow-y: scroll;
+    overflow-x: auto;
+    padding: 8px 12px;
+    box-sizing: border-box;
+    background: #1e1e1e;
+
+    .result-error pre {
+      background: #2d2d2d;
+      padding: 8px;
+      border-radius: 4px;
+      color: #dcdcaa;
+      margin: 0;
+      font-family: Consolas, monospace;
       font-size: 12px;
-      color: #d4d4d4;
-      
-      .log-line {
-        margin-bottom: 4px;
-        line-height: 1.4;
-        
-        .log-time {
-          color: #858585;
-          margin-right: 12px;
-        }
-        
-        .log-text {
-          &.info { color: #d4d4d4; }
-          &.stdout { color: #ce9178; }
-          &.error { color: #f48771; }
-          &.success { color: #4ec9b0; }
-          &.result { color: #ffd700; font-weight: bold; }
-        }
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .result-title {
+      font-weight: bold;
+      margin: 0 0 8px;
+      color: #4ec9b0;
+      font-size: 13px;
+
+      &.error-text { color: #f48771; }
+    }
+
+    .result-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+
+      th, td {
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        padding: 6px 8px;
+        text-align: center;
+        white-space: nowrap;
       }
-      
-      .final-result {
-        pre {
-          background: #2d2d2d;
-          padding: 8px;
-          border-radius: 4px;
-          overflow-x: auto;
-          color: #dcdcaa;
-          margin-top: 8px;
-        }
-        .result-title {
-          font-weight: bold;
-          margin: 8px 0 4px;
-          color: #4ec9b0;
-        }
+
+      th {
+        background: rgba(78, 201, 176, 0.15);
+        color: #4ec9b0;
+        position: sticky;
+        top: 0;
+        z-index: 1;
       }
+
+      td { color: #dcdcaa; }
+    }
+  }
+
+  .output-console .console-body,
+  .result-panel .result-body {
+    &::-webkit-scrollbar { width: 6px; height: 6px; }
+    &::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
+    &::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.25);
+      border-radius: 3px;
     }
   }
 }

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """K3s cluster API server for big-screen dashboard."""
 import json
+import queue
 import subprocess
 import threading
 import time
@@ -8,6 +9,8 @@ import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
+
+from topic_tasks import cancel_task, get_task, start_task, subscribe_logs, unsubscribe_logs
 
 KUBECONFIG = "/home/a/.kube/config"
 CACHE_TTL = 8
@@ -380,8 +383,25 @@ class APIHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _send_cors_headers(self):
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+
+    def _read_json_body(self):
+        length = int(self.headers.get("Content-Length", 0))
+        if length <= 0:
+            return {}
+        raw = self.rfile.read(length)
+        return json.loads(raw.decode("utf-8"))
+
     def _send_error(self, msg, code=500):
         self._send_json({"ret": 0, "msg": msg}, code)
+
+    def do_OPTIONS(self):
+        self.send_response(204)
+        self._send_cors_headers()
+        self.end_headers()
 
     def do_GET(self):
         parsed = urlparse(self.path)
@@ -431,6 +451,16 @@ class APIHandler(BaseHTTPRequestHandler):
             # health check
             elif path == "/api/health":
                 self._send_json({"ret": 1, "data": "ok"})
+
+            # /api/tasks/{taskId}/stream
+            elif path.startswith("/api/tasks/") and path.endswith("/stream"):
+                task_id = path[len("/api/tasks/") : -len("/stream")].strip("/")
+                self._handle_task_stream(task_id)
+
+            # /api/tasks/{taskId}/result
+            elif path.startswith("/api/tasks/") and path.endswith("/result"):
+                task_id = path[len("/api/tasks/") : -len("/result")].strip("/")
+                self._handle_task_result(task_id)
 
             else:
                 self._send_error("Not found", 404)
@@ -550,8 +580,174 @@ class APIHandler(BaseHTTPRequestHandler):
     def _handle_data_centers(self):
         self._send_json({"ret": 1, "data": []})
 
+    def _handle_task_stream(self, task_id):
+        subscriber, current = subscribe_logs(task_id)
+        if current is None:
+            return self._send_error("Task not found", 404)
+
+        self.send_response(200)
+        self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+        self.send_header("Cache-Control", "no-cache")
+        self.send_header("Connection", "keep-alive")
+        self._send_cors_headers()
+        self.end_headers()
+
+        try:
+            while True:
+                try:
+                    entry = subscriber.get(timeout=15)
+                    payload = json.dumps(
+                        {"message": entry["message"], "type": entry["type"]},
+                        ensure_ascii=False,
+                    )
+                    self.wfile.write(f"data: {payload}\n\n".encode("utf-8"))
+                    self.wfile.flush()
+                except queue.Empty:
+                    task = get_task(task_id)
+                    if not task or task["status"] != "running":
+                        break
+                    self.wfile.write(b": heartbeat\n\n")
+                    self.wfile.flush()
+        except (BrokenPipeError, ConnectionResetError):
+            pass
+        finally:
+            unsubscribe_logs(task_id, subscriber)
+
+    def _handle_task_result(self, task_id):
+        task = get_task(task_id)
+        if not task:
+            return self._send_error("Task not found", 404)
+        self._send_json(
+            {
+                "ret": 1,
+                "data": {
+                    "taskId": task["taskId"],
+                    "status": task["status"],
+                    "error": task["error"],
+                    "rows": task["rows"],
+                },
+            }
+        )
+
     def do_POST(self):
-        self._send_error("Not implemented", 405)
+        parsed = urlparse(self.path)
+        path = parsed.path
+        try:
+            if path == "/api/tasks/run":
+                self._handle_task_run()
+            else:
+                self._send_error("Not implemented", 405)
+        except Exception as e:
+            print(f"[handler error] {path}: {e}")
+            self._send_error(str(e))
+
+    def do_DELETE(self):
+        parsed = urlparse(self.path)
+        path = parsed.path
+        try:
+            if path.startswith("/api/tasks/"):
+                task_id = path[len("/api/tasks/") :].strip("/")
+                if not task_id or "/" in task_id:
+                    return self._send_error("Invalid task id", 400)
+                cancelled = cancel_task(task_id)
+                if not cancelled:
+                    return self._send_error("Task not found", 404)
+                self._send_json({"ret": 1, "data": {"taskId": task_id, "cancelled": True}})
+            else:
+                self._send_error("Not found", 404)
+        except Exception as e:
+            print(f"[handler error] {path}: {e}")
+            self._send_error(str(e))
+
+    def _handle_task_run(self):
+        payload = self._read_json_body()
+        try:
+            topic_id = int(payload.get("topicId"))
+        except (TypeError, ValueError):
+            return self._send_error("请选择课题", 400)
+        if topic_id not in (1, 2, 3):
+            return self._send_error("该课题运行配置暂未开放", 400)
+
+        if topic_id == 3:
+            scenario = payload.get("scenario")
+            models = payload.get("models") or []
+            if not models and payload.get("model"):
+                models = [payload.get("model")]
+            num_tasks = payload.get("numTasks") or 100
+            port = payload.get("port") or 9999
+
+            if scenario not in ("ascend_ascend", "ascend_feiteng", "ascend_mixed"):
+                return self._send_error("请选择运行场景", 400)
+            if not isinstance(models, list) or not models:
+                return self._send_error("请选择运行模型", 400)
+            try:
+                num_tasks = int(num_tasks)
+            except (TypeError, ValueError):
+                return self._send_error("请求次数无效", 400)
+            if num_tasks < 1:
+                return self._send_error("统计请求次数至少为 1", 400)
+            try:
+                port = int(port)
+            except (TypeError, ValueError):
+                return self._send_error("端口无效", 400)
+
+            task_id = start_task(
+                {
+                    "topicId": topic_id,
+                    "scenario": scenario,
+                    "models": models,
+                    "numTasks": num_tasks,
+                    "port": port,
+                }
+            )
+            return self._send_json({"ret": 1, "data": {"taskId": task_id}})
+
+        if topic_id == 2:
+            board = payload.get("board")
+            dataset_group = payload.get("dataset_group")
+            load_level = payload.get("load_level")
+
+            if board not in ("st", "ft"):
+                return self._send_error("请选择板子类型", 400)
+            if dataset_group not in ("google", "huawei"):
+                return self._send_error("请选择数据集分组", 400)
+            if load_level not in ("L", "H"):
+                return self._send_error("请选择负载等级", 400)
+
+            task_id = start_task(
+                {
+                    "topicId": topic_id,
+                    "board": board,
+                    "dataset_group": dataset_group,
+                    "load_level": load_level,
+                }
+            )
+            return self._send_json({"ret": 1, "data": {"taskId": task_id}})
+
+        platform = payload.get("platform")
+        models = payload.get("models") or []
+        rounds = payload.get("rounds")
+
+        if platform not in ("feiteng", "ascend"):
+            return self._send_error("请选择硬件平台", 400)
+        if not models:
+            return self._send_error("请至少选择一个模型", 400)
+        try:
+            rounds = int(rounds)
+        except (TypeError, ValueError):
+            return self._send_error("执行轮数无效", 400)
+        if rounds < 1:
+            return self._send_error("执行轮数至少为 1", 400)
+
+        task_id = start_task(
+            {
+                "topicId": topic_id,
+                "platform": platform,
+                "models": models,
+                "rounds": rounds,
+            }
+        )
+        self._send_json({"ret": 1, "data": {"taskId": task_id}})
 
     def log_message(self, format, *args):
         print(f"[{self.log_date_time_string()}] {self.client_address} {format % args}")
