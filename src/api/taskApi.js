@@ -52,6 +52,20 @@ export function cancelTopicTask(taskId) {
     });
 }
 
+export function cleanupPodsEnvironment() {
+  return taskClient.post('/k8s/cleanupPods')
+    .then((res) => {
+      const body = res.data || {};
+      if (body.ret !== 1) {
+        throw new Error(body.msg || body.message || body.error || '清理 pods 环境失败');
+      }
+      return body.data;
+    })
+    .catch((error) => {
+      throw new Error(getErrorMessage(error, '清理 pods 环境失败'));
+    });
+}
+
 export function createTopicTaskStream(taskId, onMessage) {
   const source = new EventSource(`/api/tasks/${taskId}/stream`);
   source.onmessage = (event) => {

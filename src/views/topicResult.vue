@@ -27,6 +27,13 @@
           @click="openRunDialog">
           运行
         </el-button>
+        <el-button
+          type="warning"
+          size="small"
+          :loading="cleanupLoading"
+          @click="handleCleanupPods">
+          清理 pods 环境
+        </el-button>
       </div>
 
   
@@ -240,6 +247,30 @@
           />
         </template>
 
+        <template v-else-if="normalizedSelectedTopic === 4">
+          <el-form-item label="执行设备">
+            <el-select v-model="taskConfig.device" placeholder="请选择执行设备" style="width: 100%;">
+              <el-option label="昇腾 (192.168.31.179)" value="ascend" />
+              <el-option label="飞腾 (本机)" value="feiteng" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="总轮数">
+            <el-input-number
+              v-model="taskConfig.rounds"
+              :min="1"
+              :max="10000"
+              :step="1"
+              style="width: 100%;"
+            />
+          </el-form-item>
+          <el-alert
+            title="昇腾定向调用 192.168.31.179；飞腾只调用本机 127.0.0.1，避免被负载均衡。请求强度固定为 8 req/s。"
+            type="info"
+            :closable="false"
+            show-icon
+          />
+        </template>
+
         <el-form-item v-else>
           <el-alert
             title="该课题的运行配置暂未开放"
@@ -316,6 +347,7 @@ import {
   runTopicTask,
   getTopicTaskResult,
   cancelTopicTask,
+  cleanupPodsEnvironment,
   createTopicTaskStream,
 } from '@/api/taskApi';
 import {
@@ -381,18 +413,20 @@ export default {
     ],
     selectedTopic: 1,
     runLoading: false,
+    cleanupLoading: false,
     runDialogVisible: false,
     taskRunning: false,
     taskConfig: {
       platform: '',
       models: [],
-      rounds: 1,
+      rounds: 300,
       board: '',
       dataset_group: '',
       load_level: '',
       scenario: '',
       model: 'resnet50',
-      numTasks: 100,
+      device: '',
+      numTasks: 215,
       port: 9999,
     },
     outputLogs: [],
@@ -675,13 +709,14 @@ export default {
       return {
         platform: '',
         models: [],
-        rounds: 1,
+        rounds: this.normalizedSelectedTopic === 4 ? 300 : 1,
         board: '',
         dataset_group: '',
         load_level: '',
         scenario: '',
         model: 'resnet50',
-        numTasks: 100,
+        device: '',
+        numTasks: 215,
         port: 9999,
       };
     },
@@ -744,6 +779,17 @@ export default {
         }
         return true;
       }
+      if (topicId === 4) {
+        if (!this.taskConfig.device) {
+          this.$message.warning('请选择执行设备');
+          return false;
+        }
+        if (!this.taskConfig.rounds || this.taskConfig.rounds < 1) {
+          this.$message.warning('总轮数至少为 1');
+          return false;
+        }
+        return true;
+      }
       if (topicId !== 1) {
         this.$message.info('该课题运行配置暂未开放');
         return false;
@@ -783,6 +829,13 @@ export default {
           models,
           numTasks: this.taskConfig.numTasks,
           port: this.taskConfig.port,
+        };
+      }
+      if (topicId === 4) {
+        return {
+          topicId,
+          device: this.taskConfig.device,
+          rounds: this.taskConfig.rounds,
         };
       }
       const models = this.taskConfig.models.includes('all')
@@ -833,8 +886,53 @@ export default {
       this.taskError = '';
     },
 
+    async handleCleanupPods() {
+      if (this.cleanupLoading) return;
+      try {
+        await this.$confirm('将把模型与异构任务 Deployment 缩容到 0，是否继续？', '清理 pods 环境', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        });
+      } catch (error) {
+        return;
+      }
+      this.cleanupLoading = true;
+      try {
+        await cleanupPodsEnvironment();
+        this.$message.success('pods 环境清理完成');
+        this.addLog('[清理] 已将模型与异构任务 Deployment 缩容到 0', 'success');
+      } catch (error) {
+        const message = error.message || '清理 pods 环境失败';
+        this.$message.error(message);
+        this.addLog(`[清理失败] ${message}`, 'error');
+      } finally {
+        this.cleanupLoading = false;
+      }
+    },
+
     // 添加一条日志
     addLog(text, type = 'info') {
+      const isProgressLine = typeof text === 'string' && /^已执行\s+\d+\/\d+$/.test(text);
+      if (isProgressLine) {
+        const lastIndex = this.outputLogs.length - 1;
+        if (lastIndex >= 0) {
+          const lastLog = this.outputLogs[lastIndex];
+          if (lastLog && /^已执行\s+\d+\/\d+$/.test(lastLog.text || '')) {
+            this.$set(this.outputLogs, lastIndex, {
+              ...lastLog,
+              time: new Date().toLocaleTimeString(),
+              text,
+              type,
+            });
+            this.$nextTick(() => {
+              const consoleBody = this.$refs.consoleBody;
+              if (consoleBody) consoleBody.scrollTop = consoleBody.scrollHeight;
+            });
+            return;
+          }
+        }
+      }
       this.outputLogs.push({
         time: new Date().toLocaleTimeString(),
         text: text,
@@ -868,7 +966,7 @@ export default {
     normalizeTaskResultRows(result) {
       const rows = result.rows || result.resultRows || result.output || result.result || [];
       const parsedRows = Array.isArray(rows) ? rows : [];
-      if (this.normalizedSelectedTopic === 2 || this.normalizedSelectedTopic === 3) {
+      if (this.normalizedSelectedTopic === 2 || this.normalizedSelectedTopic === 3 || this.normalizedSelectedTopic === 4) {
         return parsedRows.map((row) => ({ ...row }));
       }
       return parsedRows.map((row) => ({
@@ -947,6 +1045,9 @@ export default {
         };
         const scenarioLabel = scenarioMap[payload.scenario] || payload.scenario;
         this.addLog(`[配置] 课题三 / ${scenarioLabel} / ${payload.models.join(', ')} / 统计 ${payload.numTasks} 次 / 预热 5 次`, 'info');
+      } else if (payload.topicId === 4) {
+        const deviceLabel = payload.device === 'ascend' ? '昇腾 192.168.31.179' : '飞腾 本机';
+        this.addLog(`[配置] 课题四 / ${deviceLabel} / 总轮数 ${payload.rounds} / 请求强度 8 req/s`, 'info');
       } else {
         const platformLabel = payload.platform === 'ascend' ? '昇腾' : '飞腾';
         this.addLog(`[配置] 课题一 / ${platformLabel} / 轮数 ${payload.rounds}`, 'info');

@@ -1,6 +1,9 @@
 module.exports = {
   devServer: {
-    port: 7000, // 端口号
+    host: '0.0.0.0',
+    port: 7001, // 端口号
+    public: '192.168.31.36:7001',
+    disableHostCheck: true,
     // 配置跨域
     proxy: {
       '/api':{

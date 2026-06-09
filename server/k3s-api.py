@@ -18,6 +18,20 @@ NODE_RESOURCE_TTL = 10
 K3S_API_SERVER = "https://127.0.0.1:6443"
 HISTORY_SIZE = 60
 PORT = 8099
+MODEL_DEPLOYMENTS = [
+    "resnet18-deploy",
+    "resnet50-deploy",
+    "resnet101-deploy",
+    "mobilevgg-deploy",
+    "lightvgg11-deploy",
+    "levit128-deploy",
+    "deit-tiny-patch16-224-deploy",
+    "mobilenetv2-deploy",
+    "mobilenetv3-deploy",
+    "yolov8n-deploy",
+    "yolov5s-deploy",
+    "hetero-task-deploy",
+]
 
 _cache = {
     "nodes_raw": None,
@@ -580,6 +594,29 @@ class APIHandler(BaseHTTPRequestHandler):
     def _handle_data_centers(self):
         self._send_json({"ret": 1, "data": []})
 
+    def _handle_cleanup_pods(self):
+        results = []
+        failures = []
+        for deployment in MODEL_DEPLOYMENTS:
+            raw = run_kubectl(["scale", "deploy", deployment, "--replicas=0", "-n", "default"])
+            ok = raw is not None
+            results.append({"deployment": deployment, "scaled": ok})
+            if not ok:
+                failures.append(deployment)
+
+        with _lock:
+            _cache["pods_count"] = None
+            _cache["pods_count_ts"] = 0
+            _cache["pod_per_node"] = None
+            _cache["pod_per_node_ts"] = 0
+
+        if failures:
+            return self._send_json(
+                {"ret": 0, "msg": "部分 Deployment 缩容失败", "data": {"failures": failures, "results": results}},
+                500,
+            )
+        self._send_json({"ret": 1, "data": {"results": results}})
+
     def _handle_task_stream(self, task_id):
         subscriber, current = subscribe_logs(task_id)
         if current is None:
@@ -632,9 +669,12 @@ class APIHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         parsed = urlparse(self.path)
         path = parsed.path
+        normalized_path = path.rstrip("/") or "/"
         try:
-            if path == "/api/tasks/run":
+            if normalized_path == "/api/tasks/run":
                 self._handle_task_run()
+            elif normalized_path in ("/api/k8s/cleanupPods", "/k8s/cleanupPods", "/api/cleanupPods"):
+                self._handle_cleanup_pods()
             else:
                 self._send_error("Not implemented", 405)
         except Exception as e:
@@ -665,7 +705,7 @@ class APIHandler(BaseHTTPRequestHandler):
             topic_id = int(payload.get("topicId"))
         except (TypeError, ValueError):
             return self._send_error("请选择课题", 400)
-        if topic_id not in (1, 2, 3):
+        if topic_id not in (1, 2, 3, 4):
             return self._send_error("该课题运行配置暂未开放", 400)
 
         if topic_id == 3:
@@ -720,6 +760,28 @@ class APIHandler(BaseHTTPRequestHandler):
                     "board": board,
                     "dataset_group": dataset_group,
                     "load_level": load_level,
+                }
+            )
+            return self._send_json({"ret": 1, "data": {"taskId": task_id}})
+
+        if topic_id == 4:
+            device = payload.get("device")
+            rounds = payload.get("rounds") or 300
+
+            if device not in ("feiteng", "ascend"):
+                return self._send_error("请选择执行设备", 400)
+            try:
+                rounds = int(rounds)
+            except (TypeError, ValueError):
+                return self._send_error("总轮数无效", 400)
+            if rounds < 1:
+                return self._send_error("总轮数至少为 1", 400)
+
+            task_id = start_task(
+                {
+                    "topicId": topic_id,
+                    "device": device,
+                    "rounds": rounds,
                 }
             )
             return self._send_json({"ret": 1, "data": {"taskId": task_id}})
