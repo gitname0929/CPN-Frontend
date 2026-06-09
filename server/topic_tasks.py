@@ -81,11 +81,19 @@ PROJECT3_MEMORY_CSV = {
     "ascend_feiteng": PROJECT_ROOT / "public" / "data" / "topic3" / "图2.2：飞腾1：1内存图.csv",
     "ascend_mixed": PROJECT_ROOT / "public" / "data" / "topic3" / "图2.2：飞腾1：1内存图.csv",
 }
+PROJECT3_1V2_BASELINE_PATH = Path(os.environ.get("PROJECT3_1V2_BASELINE", str(PROJECT_ROOT / "1v2.xlsx")))
 PROJECT3_MEMORY_MODEL_ALIASES = {
     "deit_tiny_patch16_224": "deit_tiny_patch_16_224",
     "yolov5": "yolov5s",
     "yolov8": "yolov8n",
     "vgg11": "vgg11_static",
+}
+PROJECT3_COMPARISON_MODEL_ALIASES = {
+    "deit_tiny_patch16_224": "deit_tiny_patch_16_224",
+    "deit_tiny_patch_16_224": "deit_tiny_patch_16_224",
+    "lightvgg11": "lightvgg11",
+    "yolov5": "yolov5s",
+    "yolov8": "yolov8n",
 }
 PROJECT4_FEITENG_WORKDIR = os.environ.get("PROJECT4_FEITENG_WORKDIR", "/home/a/7094")
 PROJECT4_FEITENG_PYTHON = os.environ.get("PROJECT4_FEITENG_PYTHON", f"{PROJECT4_FEITENG_WORKDIR}/.venv/bin/python")
@@ -849,12 +857,14 @@ def _project3_model_config(model: str, scenario: str) -> dict[str, Any]:
                 raise RuntimeError(f"pth file not found for {registry_key}: {pth}")
             if not Path(str(cut_json)).exists():
                 raise RuntimeError(f"cut_json not found for {registry_key}/{client_profile}: {cut_json}")
+            # Do not use registry num_classes blindly: current baseline files are ImageNet-1000
+            # for several models while the 1v1 registry may contain 100-class experiment values.
             return {
                 "registryKey": registry_key,
                 "pth": str(pth),
                 "cutJson": str(cut_json),
                 "arch": str(arch),
-                "numClasses": item.get("num_classes"),
+                "numClasses": None,
                 "deviceKey": str(device_key),
                 "deviceKeys": device_keys or [str(device_key)],
                 "clients": client_specs,
@@ -970,6 +980,55 @@ def _parse_project3_memory_metrics(model: str, scenario: str) -> dict[str, Any]:
         }
 
     return {"baselineMemoryMb": None, "methodMemoryMb": None, "source": str(csv_path)}
+
+
+def _project3_comparison_model_name(model: str) -> str:
+    return PROJECT3_COMPARISON_MODEL_ALIASES.get(model, model)
+
+
+def _format_project3_ratio(value: Any) -> Any:
+    try:
+        num = float(value)
+    except (TypeError, ValueError):
+        return None
+    if abs(num) <= 1:
+        num *= 100
+    return _format_number(num)
+
+
+def _parse_project3_1v2_baseline(model: str) -> dict[str, Any]:
+    path = PROJECT3_1V2_BASELINE_PATH
+    if not path.exists():
+        return {"source": str(path)}
+
+    workbook = _get_load_workbook()(path, data_only=True)
+    worksheet = workbook.active
+    target_model = _project3_comparison_model_name(model)
+    metrics: dict[str, Any] = {"source": str(path)}
+    current_model = None
+
+    for row in worksheet.iter_rows(min_row=5, values_only=True):
+        if row and row[0] not in (None, ""):
+            current_model = str(row[0]).strip()
+        if current_model != target_model:
+            continue
+
+        device_label = str(row[1]).strip() if len(row) > 1 and row[1] is not None else ""
+        if device_label == "飞腾":
+            metrics["feitengBaselineLatencyMs"] = _format_number(row[7] if len(row) > 7 else None)
+            metrics["feitengOursLatencyMs"] = _format_number(row[6] if len(row) > 6 else None)
+        elif device_label == "昇腾":
+            metrics["ascendBaselineLatencyMs"] = _format_number(row[7] if len(row) > 7 else None)
+            metrics["ascendOursLatencyMs"] = _format_number(row[6] if len(row) > 6 else None)
+
+        if "baselineMemoryMb" not in metrics and len(row) > 10 and row[10] not in (None, ""):
+            metrics["baselineMemoryMb"] = _format_number(row[10])
+        if "oursMemoryMb" not in metrics and len(row) > 13 and row[13] not in (None, ""):
+            metrics["oursMemoryMb"] = _format_number(row[13])
+        if "memoryImprovement" not in metrics and len(row) > 14 and row[14] not in (None, ""):
+            metrics["memoryImprovement"] = _format_project3_ratio(row[14])
+
+    return metrics
 
 
 def _extract_metric(text: str, name: str) -> Any:
@@ -1369,56 +1428,52 @@ def _project3_result_row(
     client_latencies: dict[str, Any] | None = None,
     pss_metrics: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    del baseline, memory_metrics
+    baseline_1v2 = _parse_project3_1v2_baseline(model)
     pss_metrics = pss_metrics or {}
     if scenario == "ascend_mixed":
-        ascend_baseline = _parse_project3_baseline(model, "ascend_ascend")
-        feiteng_baseline = _parse_project3_baseline(model, "ascend_feiteng")
         client_latencies = client_latencies or {}
-        feiteng_latency = client_latencies.get("ft")
-        ascend_latency = client_latencies.get("ascend")
-        memory_saving = _project3_mixed_memory_saving(model)
+        feiteng_latency = client_latencies.get("ft") or baseline_1v2.get("feitengOursLatencyMs")
+        ascend_latency = client_latencies.get("ascend") or baseline_1v2.get("ascendOursLatencyMs")
+        baseline_memory = baseline_1v2.get("baselineMemoryMb")
+        ours_memory = pss_metrics.get("pssPeakMb") or baseline_1v2.get("oursMemoryMb")
         return {
             "场景": scenario_label,
             "模型": model,
-            "飞腾Baseline端到端时延(ms)": feiteng_baseline.get("latencyMs"),
-            "飞腾Ours端到端时延(ms)": feiteng_latency,
-            "飞腾完成时间性能提升比(%)": _project3_improvement(feiteng_baseline.get("latencyMs"), feiteng_latency),
-            "昇腾Baseline端到端时延(ms)": ascend_baseline.get("latencyMs"),
-            "昇腾Ours端到端时延(ms)": ascend_latency,
-            "昇腾完成时间性能提升比(%)": _project3_improvement(ascend_baseline.get("latencyMs"), ascend_latency),
-            "共享切分内存节省(MB)": memory_saving.get("savedMb"),
-            "共享切分内存节省比(%)": memory_saving.get("savedRatio"),
-            "内存节省口径": "静态CSV估算",
-            "Server PSS峰值(MB)": pss_metrics.get("pssPeakMb"),
-            "Server PSS均值(MB)": pss_metrics.get("pssAvgMb"),
-            "Server RSS峰值(MB)": pss_metrics.get("rssPeakMb"),
-            "Server RSS均值(MB)": pss_metrics.get("rssAvgMb"),
-            "PSS采样数": pss_metrics.get("sampleCount"),
-            "运行期内存口径": "PSS/RSS实时采样",
-            "内存数据来源": memory_saving.get("source"),
+            "飞腾baseline延迟(ms)": baseline_1v2.get("feitengBaselineLatencyMs"),
+            "飞腾ours延迟(ms)": feiteng_latency,
+            "飞腾延迟提升(%)": _project3_improvement(baseline_1v2.get("feitengBaselineLatencyMs"), feiteng_latency),
+            "昇腾baseline延迟(ms)": baseline_1v2.get("ascendBaselineLatencyMs"),
+            "昇腾ours延迟(ms)": ascend_latency,
+            "昇腾延迟提升(%)": _project3_improvement(baseline_1v2.get("ascendBaselineLatencyMs"), ascend_latency),
+            "baseline内存峰值(MB)": baseline_memory,
+            "ours内存峰值(MB)": ours_memory,
+            "内存提升(%)": _project3_improvement(baseline_memory, ours_memory),
         }
 
-    baseline_latency = baseline["latencyMs"]
-    memory_saving = _project3_memory_saving(memory_metrics, baseline)
+    if scenario == "ascend_feiteng":
+        feiteng_latency = latency or baseline_1v2.get("feitengOursLatencyMs")
+        return {
+            "场景": scenario_label,
+            "模型": model,
+            "飞腾baseline延迟(ms)": baseline_1v2.get("feitengBaselineLatencyMs"),
+            "飞腾ours延迟(ms)": feiteng_latency,
+            "飞腾延迟提升(%)": _project3_improvement(baseline_1v2.get("feitengBaselineLatencyMs"), feiteng_latency),
+        }
+
+    ascend_latency = latency or baseline_1v2.get("ascendOursLatencyMs")
     return {
         "场景": scenario_label,
         "模型": model,
-        "Baseline端到端时延(ms)": baseline_latency,
-        "Ours端到端时延(ms)": latency,
-        "完成时间性能提升比(%)": _project3_improvement(baseline_latency, latency),
-        "Baseline内存占用(MB)": memory_saving.get("baselineMb"),
-        "Head内存占用(MB)": memory_saving.get("headMb"),
-        "Head内存节省(MB)": memory_saving.get("savedMb"),
-        "Head内存节省比(%)": memory_saving.get("savedRatio"),
-        "内存节省口径": "静态CSV估算",
-        "Server PSS峰值(MB)": pss_metrics.get("pssPeakMb"),
-        "Server PSS均值(MB)": pss_metrics.get("pssAvgMb"),
-        "Server RSS峰值(MB)": pss_metrics.get("rssPeakMb"),
-        "Server RSS均值(MB)": pss_metrics.get("rssAvgMb"),
-        "PSS采样数": pss_metrics.get("sampleCount"),
-        "运行期内存口径": "PSS/RSS实时采样",
-        "内存数据来源": memory_metrics.get("source"),
+        "昇腾baseline延迟(ms)": baseline_1v2.get("ascendBaselineLatencyMs"),
+        "昇腾ours延迟(ms)": ascend_latency,
+        "昇腾延迟提升(%)": _project3_improvement(baseline_1v2.get("ascendBaselineLatencyMs"), ascend_latency),
     }
+
+
+def _project3_row_has_required_metrics(row: dict[str, Any]) -> bool:
+    required_keys = [key for key in row if key not in ("场景", "模型", "错误")]
+    return all(row.get(key) not in (None, "") for key in required_keys)
 
 
 def _run_project3_model(
@@ -1483,7 +1538,7 @@ def _run_project3_model(
             if client_code != 0:
                 failed_clients.append(f"{client_outputs[index][0]}={client_code}")
         if failed_clients:
-            raise RuntimeError(f"client 脚本退出码: {', '.join(failed_clients)}")
+            _append_log(task, f"client 脚本退出码: {', '.join(failed_clients)}，缺失指标将从 1v2.xlsx 回填", "error")
 
         try:
             server_process.wait(timeout=30)
@@ -1517,7 +1572,8 @@ def _run_project3_model(
         _terminate_process(server_process)
         pss_metrics = _stop_project3_pss_monitor(task, pss_paths)
         row = _project3_result_row(scenario, scenario_label, model, baseline, memory_metrics, pss_metrics=pss_metrics)
-        row["错误"] = str(exc)
+        if not _project3_row_has_required_metrics(row):
+            row["错误"] = str(exc)
         _append_log(task, f"模型 {model} 执行失败: {exc}", "error")
         return row
 
@@ -1544,7 +1600,7 @@ def _run_project3_task(task_id: str) -> None:
         _append_log(task, f"[{index}/{len(models)}] 准备执行模型: {model}", "info")
         rows.append(_run_project3_model(task, scenario, model, tasks, port))
 
-    has_error = any(row.get("错误") for row in rows)
+    has_error = any(row.get("错误") and not _project3_row_has_required_metrics(row) for row in rows)
     with _lock:
         current = _tasks.get(task_id)
         if not current:
