@@ -37,8 +37,9 @@ def _get_load_workbook():
 FEITENG_SCRIPT = os.environ.get("TOPIC1_FEITENG_SCRIPT", "/home/a/709Docker/kubernetes_py_ctl_2/run.sh")
 FEITENG_WORKDIR = os.environ.get("TOPIC1_FEITENG_WORKDIR", "/home/a/709Docker/kubernetes_py_ctl_2")
 ASCEND_HOST = os.environ.get("TOPIC1_ASCEND_HOST", "root@192.168.31.179")
-ASCEND_SCRIPT = os.environ.get("TOPIC1_ASCEND_SCRIPT", "/root/709Docker/kubernetes_py_ctl_2/run.sh")
+ASCEND_SCRIPT = os.environ.get("TOPIC1_ASCEND_SCRIPT", "/root/709Docker/kubernetes_py_ctl_2/run_ascend.sh")
 ASCEND_WORKDIR = os.environ.get("TOPIC1_ASCEND_WORKDIR", "/root/709Docker/kubernetes_py_ctl_2")
+TOPIC1_ROUNDS = int(os.environ.get("TOPIC1_ROUNDS", "10"))
 ASCEND_SSH_PASSWORD = os.environ.get("ASCEND_SSH_PASSWORD", "Mind@123")
 PROJECT2_RELEASE_DIR = "/home/a/709Docker/PyTaskPredict-release"
 PROJECT2_SCRIPT = f"{PROJECT2_RELEASE_DIR}/run_project2.sh"
@@ -1556,7 +1557,7 @@ def _resolve_result_rows(task: dict[str, Any]) -> list[dict[str, Any]]:
 
     _, output_path, workdir = _build_run_command(
         payload["platform"],
-        payload["rounds"],
+        TOPIC1_ROUNDS,
         payload["models"],
     )
 
@@ -1599,7 +1600,7 @@ def _run_process(task_id: str) -> None:
         else:
             cmd, output_path, workdir = _build_run_command(
                 payload["platform"],
-                payload["rounds"],
+                TOPIC1_ROUNDS,
                 payload["models"],
             )
             if payload["platform"] == "ascend":

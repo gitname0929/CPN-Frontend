@@ -1,7 +1,7 @@
 ﻿x轴,数据集子集
-y轴,平均绝对误差(MAE)
+y轴,预测平均绝对误差(MAE)
 类型,scatter,scatter,line:symbol
-,LSTM,PatchTST,KPI指标要求
+,LSTM预测,PatchTST预测,KPI指标要求(MAE≤5)
 1,2.4071,2.3812,5
 2,3.0288,3.1778,5
 3,2.0018,1.9301,5

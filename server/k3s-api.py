@@ -15,6 +15,7 @@ from topic_tasks import (
     ASCEND_HOST,
     ASCEND_SCRIPT,
     ASCEND_SSH_PASSWORD,
+    TOPIC1_ROUNDS,
     PROJECT3_ASCEND_CLIENT1_HOST,
     PROJECT3_CLIENT_SCRIPT,
     PROJECT3_SSH_PASSWORD,
@@ -840,25 +841,18 @@ class APIHandler(BaseHTTPRequestHandler):
 
         platform = payload.get("platform")
         models = payload.get("models") or []
-        rounds = payload.get("rounds")
 
         if platform not in ("feiteng", "ascend"):
             return self._send_error("请选择硬件平台", 400)
         if not models:
             return self._send_error("请至少选择一个模型", 400)
-        try:
-            rounds = int(rounds)
-        except (TypeError, ValueError):
-            return self._send_error("执行轮数无效", 400)
-        if rounds < 1:
-            return self._send_error("执行轮数至少为 1", 400)
 
         task_id = start_task(
             {
                 "topicId": topic_id,
                 "platform": platform,
                 "models": models,
-                "rounds": rounds,
+                "rounds": TOPIC1_ROUNDS,
             }
         )
         self._send_json({"ret": 1, "data": {"taskId": task_id}})

@@ -5,10 +5,10 @@ const mockTopicData = {
   1: {
     chart1: {
 		xAxisName: '模型与异构任务',// 新增：横坐标说明
-		yAxisName: '性能提升比(%)',// 新增：纵坐标说明
+		yAxisName: '容器状态调度性能提升比(%)',// 新增：纵坐标说明
 		series:[
 		{
-			name: '昇腾性能提升比(%)',
+			name: '昇腾平台(%)',
 			type: 'scatter',
 			symbolSize : 20,
 			data: [
@@ -35,7 +35,7 @@ const mockTopicData = {
 			89.03]
 		},
 		{
-			name: '飞腾性能提升比(%)',
+			name: '飞腾平台(%)',
 			type: 'scatter',
 			symbolSize : 20,
 			data: [
@@ -62,7 +62,7 @@ const mockTopicData = {
 			78.01					]
 		},
 		{
-			name: 'KPI指标要求',
+			name: 'KPI指标要求(≥40%)',
 			type: 'line',
 			data: [40,40,40,40,40,40,40,40,40,40,40,40,40,40,40,40,40,40,40,40,40]
 		}
@@ -140,19 +140,19 @@ const mockTopicData = {
   2: {
     chart1: {/*PC low goole*/
 		xAxisName: '数据集子集',
-		yAxisName: '平均绝对误差(MAE)',
+		yAxisName: '预测平均绝对误差(MAE)',
 		series: [
-			{ name: 'LSTM',
+			{ name: 'LSTM预测',
 			type: 'scatter', 
 			symbolSize:20,
 			data: [0.3951899,0.5929973,0.5637493,0.8171165,0.9799457],
 			},
-			{ name: 'PatchTST',
+			{ name: 'PatchTST预测',
 			type: 'scatter', 
 			symbolSize:20,
 			data: [0.3823257,0.6052104,0.6567125,0.6132239,0.9766155],
 			},
-			{ name: 'KPI指标要求',
+			{ name: 'KPI指标要求(MAE≤1)',
 			type: 'line', 
 			symbolSize:20,
 			data: [1.0,1.0,1.0,1.0,1.0],
@@ -162,19 +162,19 @@ const mockTopicData = {
     },
 	chart2: {//PC high goole
 		xAxisName: '数据集子集',
-		yAxisName: '平均绝对误差(MAE)',
+		yAxisName: '预测平均绝对误差(MAE)',
 		series: [
-			{ name: 'LSTM',
+			{ name: 'LSTM预测',
 			type: 'scatter', 
 			symbolSize:20,
 			data: [2.4482443,3.043431,1.9756921,2.0574725,2.5189898],
 			},
-			{ name: 'PatchTST',
+			{ name: 'PatchTST预测',
 			type: 'scatter', 
 			symbolSize:20,
 			data: [2.3543567,3.163499,1.9240668,2.0421845,2.4713287],
 			},
-			{ name: 'KPI指标要求',
+			{ name: 'KPI指标要求(MAE≤5)',
 			type: 'line', 
 			symbolSize:20,
 			data: [5.0,5.0,5.0,5.0,5.0],
@@ -184,19 +184,19 @@ const mockTopicData = {
 	},
 	chart3: {//PC low 华为
 		xAxisName: '数据集子集',
-		yAxisName: '平均绝对误差(MAE)',
+		yAxisName: '预测平均绝对误差(MAE)',
 		series: [
-			{ name: 'LSTM',
+			{ name: 'LSTM预测',
 			type: 'scatter', 
 			symbolSize:20,
 			data: [0.2550383,0.3405134,0.7987075,0.3485339,0.2960699],
 			},
-			{ name: 'PatchTST',
+			{ name: 'PatchTST预测',
 			type: 'scatter', 
 			symbolSize:20,
 			data: [0.2524586,0.3523366,0.8811737,0.3738172,0.2751669],
 			},
-			{ name: 'KPI指标要求',
+			{ name: 'KPI指标要求(MAE≤1)',
 			type: 'line', 
 			symbolSize:20,
 			data: [1.0,1.0,1.0,1.0,1.0],
@@ -206,19 +206,19 @@ const mockTopicData = {
 	},
 	chart4: {//PC High 华为
 		xAxisName: '数据集子集',
-		yAxisName: '平均绝对误差(MAE)',
+		yAxisName: '预测平均绝对误差(MAE)',
 		series: [
-			{ name: 'LSTM',
+			{ name: 'LSTM预测',
 			type: 'scatter', 
 			symbolSize:20,
 			data: [3.7544368,4.3463435,4.070341,2.9157586,2.2330606],
 			},
-			{ name: 'PatchTST',
+			{ name: 'PatchTST预测',
 			type: 'scatter', 
 			symbolSize:20,
 			data: [3.6879606,4.0198502,3.8848554,3.0228745,2.2146439],
 			},
-			{ name: 'KPI指标要求',
+			{ name: 'KPI指标要求(MAE≤5)',
 			type: 'line', 
 			symbolSize:20,
 			data: [5.0,5.0,5.0,5.0,5.0],
@@ -228,19 +228,19 @@ const mockTopicData = {
 	},
 	chart5: {//昇腾 low goole
 		xAxisName: '数据集子集',
-		yAxisName: '平均绝对误差(MAE)',
+		yAxisName: '预测平均绝对误差(MAE)',
 		series: [
-			{ name: 'LSTM',
+			{ name: 'LSTM预测',
 			type: 'scatter', 
 			symbolSize:20,
 			data: [0.3899,0.585,0.5619,0.7773,0.9806],
 			},
-			{ name: 'PatchTST',
+			{ name: 'PatchTST预测',
 			type: 'scatter', 
 			symbolSize:20,
 			data: [0.3794,0.6084,0.6442,0.5884,0.982],
 			},
-			{ name: 'KPI指标要求',
+			{ name: 'KPI指标要求(MAE≤1)',
 			type: 'line', 
 			symbolSize:20,
 			data: [1.0,1.0,1.0,1.0,1.0],
@@ -250,19 +250,19 @@ const mockTopicData = {
 	},
 	chart6: {//昇腾 High goole
 		xAxisName: '数据集子集',
-		yAxisName: '平均绝对误差(MAE)',
+		yAxisName: '预测平均绝对误差(MAE)',
 		series: [
-			{ name: 'LSTM',
+			{ name: 'LSTM预测',
 			type: 'scatter', 
 			symbolSize:20,
 			data: [2.4071,3.0288,2.0018,2.066,2.4878],
 			},
-			{ name: 'PatchTST',
+			{ name: 'PatchTST预测',
 			type: 'scatter', 
 			symbolSize:20,
 			data: [2.3812,3.1778,1.9301,2.0445,2.4502],
 			},
-			{ name: 'KPI指标要求',
+			{ name: 'KPI指标要求(MAE≤5)',
 			type: 'line', 
 			symbolSize:20,
 			data: [5.0,5.0,5.0,5.0,5.0],
@@ -272,19 +272,19 @@ const mockTopicData = {
 	},
 	chart7: {//昇腾 low 华为
 		xAxisName: '数据集子集',
-		yAxisName: '平均绝对误差(MAE)',
+		yAxisName: '预测平均绝对误差(MAE)',
 		series: [
-			{ name: 'LSTM',
+			{ name: 'LSTM预测',
 			type: 'scatter', 
 			symbolSize:20,
 			data: [0.2529,0.3567,0.7986,0.3372,0.2808],
 			},
-			{ name: 'PatchTST',
+			{ name: 'PatchTST预测',
 			type: 'scatter', 
 			symbolSize:20,
 			data: [0.2464,0.3515,0.9046,0.3604,0.2659],
 			},
-			{ name: 'KPI指标要求',
+			{ name: 'KPI指标要求(MAE≤1)',
 			type: 'line', 
 			symbolSize:20,
 			data: [1.0,1.0,1.0,1.0,1.0],
@@ -294,19 +294,19 @@ const mockTopicData = {
 	},
 	chart8: {//昇腾 High 华为
 		xAxisName: '数据集子集',
-		yAxisName: '平均绝对误差(MAE)',
+		yAxisName: '预测平均绝对误差(MAE)',
 		series: [
-			{ name: 'LSTM',
+			{ name: 'LSTM预测',
 			type: 'scatter', 
 			symbolSize:20,
 			data: [3.7879,3.8862,4.1284,2.8595,2.2564],
 			},
-			{ name: 'PatchTST',
+			{ name: 'PatchTST预测',
 			type: 'scatter', 
 			symbolSize:20,
 			data: [3.7815,3.8752,3.8303,3.0153,2.2246],
 			},
-			{ name: 'KPI指标要求',
+			{ name: 'KPI指标要求(MAE≤5)',
 			type: 'line', 
 			symbolSize:20,
 			data: [5.0,5.0,5.0,5.0,5.0],
@@ -316,19 +316,19 @@ const mockTopicData = {
 	},
 	chart9: {//飞腾 low goole
 		xAxisName: '数据集子集',
-		yAxisName: '平均绝对误差(MAE)',
+		yAxisName: '预测平均绝对误差(MAE)',
 		series: [
-			{ name: 'LSTM',
+			{ name: 'LSTM预测',
 			type: 'scatter', 
 			symbolSize:20,
 			data: [0.3899,0.585,0.5619,0.7773,0.9806],
 			},
-			{ name: 'PatchTST',
+			{ name: 'PatchTST预测',
 			type: 'scatter', 
 			symbolSize:20,
 			data: [0.3794,0.6084,0.6441,0.5883,0.9821],
 			},
-			{ name: 'KPI指标要求',
+			{ name: 'KPI指标要求(MAE≤1)',
 			type: 'line', 
 			symbolSize:20,
 			data: [1.0,1.0,1.0,1.0,1.0],
@@ -338,19 +338,19 @@ const mockTopicData = {
 	},
 	chart10: {//飞腾 High goole
 		xAxisName: '数据集子集',
-		yAxisName: '平均绝对误差(MAE)',
+		yAxisName: '预测平均绝对误差(MAE)',
 		series: [
-			{ name: 'LSTM',
+			{ name: 'LSTM预测',
 			type: 'scatter', 
 			symbolSize:20,
 			data: [2.4072,3.0287,2.0018,2.066,2.4879],
 			},
-			{ name: 'PatchTST',
+			{ name: 'PatchTST预测',
 			type: 'scatter', 
 			symbolSize:20,
 			data: [2.3812,3.1778,1.93,2.0445,2.4503],
 			},
-			{ name: 'KPI指标要求',
+			{ name: 'KPI指标要求(MAE≤5)',
 			type: 'line', 
 			symbolSize:20,
 			data: [5.0,5.0,5.0,5.0,5.0],
@@ -360,14 +360,14 @@ const mockTopicData = {
 	},
 	chart11: {//飞腾 low 华为
 		xAxisName: '数据集子集',
-		yAxisName: '平均绝对误差(MAE)',
+		yAxisName: '预测平均绝对误差(MAE)',
 		series: [
-			{ name: 'LSTM',
+			{ name: 'LSTM预测',
 			type: 'scatter', 
 			symbolSize:20,
 			data: [0.2529,0.3567,0.7987,0.3372,0.2808],
 			},
-			{ name: 'PatchTST',
+			{ name: 'PatchTST预测',
 			type: 'scatter', 
 			symbolSize:20,
 			data: [0.2464,0.3516,0.9049,0.3604,0.2659],
@@ -382,19 +382,19 @@ const mockTopicData = {
 	},
 	chart12: {//飞腾 High 华为
 		xAxisName: '数据集子集',
-		yAxisName: '平均绝对误差(MAE)',
+		yAxisName: '预测平均绝对误差(MAE)',
 		series: [
-			{ name: 'LSTM',
+			{ name: 'LSTM预测',
 			type: 'scatter', 
 			symbolSize:20,
 			data: [3.7879,3.8865,4.1283,2.8595,2.2564],
 			},
-			{ name: 'PatchTST',
+			{ name: 'PatchTST预测',
 			type: 'scatter', 
 			symbolSize:20,
 			data: [3.7822,3.875,3.8304,3.0153,2.2246],
 			},
-			{ name: 'KPI指标要求',
+			{ name: 'KPI指标要求(MAE≤5)',
 			type: 'line', 
 			symbolSize:20,
 			data: [5.0,5.0,5.0,5.0,5.0],
@@ -603,73 +603,73 @@ const mockTopicData = {
   4: {
     chart1: {
       xAxisName: '请求强度',
-      yAxisName: '吞吐量',
+      yAxisName: '吞吐量(req/s)',
       categories: ['6 req/s', '8 req/s', '10 req/s'],
       series: [
         {
-          name: 'LRU',
+          name: 'LRU缓存策略',
           type: 'bar',
           data: [
-            { value: 1.25, label: 'Ours +60.8%' },
-            { value: 1.11, label: 'Ours +113.5%' },
-            { value: 0.89, label: 'Ours +162.9%' },
+            { value: 1.1, label: 'Ours +91.8%' },
+            { value: 1.3, label: 'Ours +138.5%' },
+            { value: 1.36, label: 'Ours +160.3%' },
           ]
         },
         {
-          name: 'Ours w/o prediction',
+          name: '本方案(无预测)',
           type: 'bar',
           data: [
-            { value: 0.87, label: 'Ours +131.0%' },
-            { value: 0.83, label: 'Ours +185.5%' },
-            { value: 0.67, label: 'Ours +249.2%' },
+            { value: 0.64, label: 'Ours +229.6.0%' },
+            { value: 0.7, label: 'Ours +342.8%' },
+            { value: 0.65, label: 'Ours +444.6%' },
           ]
         },
         {
-          name: 'Ours',
+          name: '本方案(含预测)',
           type: 'bar',
-          data: [2.01, 2.37, 2.34]
+          data: [2.11, 3.1, 3.54]
         },
         {
-          name: '30%提升下界',
+          name: '相较LRU提升30%下界',
           type: 'line',
           smooth: true,
-          data: [1.63, 1.44, 1.16]
+          data: [1.43, 1.69, 1.768]
         }
       ]
     },
     chart2: {
       xAxisName: '请求强度',
-      yAxisName: '吞吐量',
+      yAxisName: '吞吐量(req/s)',
       categories: ['6 req/s', '8 req/s', '10 req/s'],
       series: [
         {
-          name: 'LRU',
+          name: 'LRU缓存策略',
           type: 'bar',
           data: [
-            { value: 0.8, label: 'Ours +37.5%' },
-            { value: 1.07, label: 'Ours +54.2%' },
-            { value: 1.1, label: 'Ours +83.6%' },
+            { value: 0.84, label: 'Ours +42.9%' },
+            { value: 1.06, label: 'Ours +33.0%' },
+            { value: 1.07, label: 'Ours +62.6%' },
           ]
         },
         {
-          name: 'Ours w/o prediction',
+          name: '本方案(无预测)',
           type: 'bar',
           data: [
-            { value: 0.76, label: 'Ours +44.7%' },
-            { value: 0.88, label: 'Ours +87.5%' },
-            { value: 0.83, label: 'Ours +143.4%' },
+            { value: 0.721, label: 'Ours +66.7%' },
+            { value: 0.93, label: 'Ours +51.6%' },
+            { value: 0.86, label: 'Ours +102.3%' },
           ]
         },
         {
-          name: 'Ours',
+          name: '本方案(含预测)',
           type: 'bar',
-          data: [1.1, 1.65, 2.02]
+          data: [1.20, 1.41, 1.74]
         },
         {
-          name: '30%提升下界',
+          name: '相较LRU提升30%下界',
           type: 'line',
           smooth: true,
-          data: [1.04, 1.39, 1.43]
+          data: [1.09, 1.38, 1.39]
         }
       ]
     },

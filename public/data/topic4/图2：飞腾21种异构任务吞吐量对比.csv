@@ -1,7 +1,7 @@
 x轴,请求强度
-y轴,吞吐量
+y轴,吞吐量(req/s)
 类型,bar,bar,bar,line
-,LRU,Ours w/o prediction,Ours,30%提升下界
+,LRU缓存策略,本方案(无预测),本方案(含预测),相较LRU提升30%下界
 6 req/s,0.84|Ours +42.9%,0.721|Ours +66.7%,1.20,1.09
 8 req/s,1.06|Ours +33.0%,0.93|Ours +51.6%,1.41,1.38
 10 req/s,1.07|Ours +62.6%,0.86|Ours +102.3%,1.74,1.39

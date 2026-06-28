@@ -126,7 +126,7 @@
       custom-class="topic-run-dialog"
       :before-close="handleDialogClose"
     >
-      <el-form :model="taskConfig" label-width="100px" size="small">
+      <el-form :key="taskFormKey" :model="taskConfig" label-width="100px" size="small">
         <el-form-item label="课题">
           <el-select v-model="selectedTopic" placeholder="请选择课题" style="width: 100%;">
             <el-option
@@ -152,9 +152,7 @@
               collapse-tags
               placeholder="请选择要运行的模型"
               style="width: 100%;"
-              @change="onModelsChange"
             >
-              <el-option label="全部 (all)" value="all" />
               <el-option
                 v-for="model in modelOptions"
                 :key="model"
@@ -162,15 +160,6 @@
                 :value="model"
               />
             </el-select>
-          </el-form-item>
-          <el-form-item label="执行轮数">
-            <el-input-number
-              v-model="taskConfig.rounds"
-              :min="1"
-              :max="9999"
-              :step="1"
-              style="width: 100%;"
-            />
           </el-form-item>
         </template>
 
@@ -197,7 +186,7 @@
 
         <template v-else-if="normalizedSelectedTopic === 3">
           <el-form-item label="板子类型">
-            <el-select v-model="taskConfig.scenario" placeholder="请选择运行场景" style="width: 100%;">
+            <el-select v-model="taskConfig.scenario" placeholder="请选择运行场景" style="width: 100%;" @change="onTopic3ScenarioChange">
               <el-option label="飞腾" value="ascend_feiteng_feiteng" />
               <el-option label="昇腾" value="ascend_ascend_ascend" />
             </el-select>
@@ -209,9 +198,7 @@
               collapse-tags
               placeholder="请选择运行模型"
               style="width: 100%;"
-              @change="onTopic3ModelsChange"
             >
-              <el-option label="全部 (all)" value="all" />
               <el-option
                 v-for="model in topic3ModelOptions"
                 :key="model"
@@ -375,15 +362,15 @@ export default {
     runLoading: false,
     cleanupLoading: false,
     runDialogVisible: false,
+    taskFormKey: 0,
     taskRunning: false,
     taskConfig: {
       platform: '',
       models: [],
-      rounds: 300,
       board: '',
       dataset_group: '',
       load_level: '',
-      scenario: 'ascend_feiteng_feiteng',
+      scenario: '',
       model: 'resnet50',
       device: '',
       numTasks: 215,
@@ -442,7 +429,10 @@ export default {
             });
         }
     },
-
+    selectedTopic(newVal, oldVal) {
+      if (!this.runDialogVisible || newVal === oldVal || this.taskRunning) return;
+      this.resetTaskConfig();
+    },
   },
 
 
@@ -551,17 +541,81 @@ export default {
           this.chartInstance.setOption(option);
         }
     },
+    buildSegmentLineSeries(seriesItem, color) {
+      const values = (seriesItem.data || []).map((point) => {
+        if (point && typeof point === 'object') return point.value;
+        return point;
+      });
+
+      return {
+        name: seriesItem.name,
+        type: 'custom',
+        clip: true,
+        z: 10,
+        itemStyle: { color },
+        renderItem: (params, api) => {
+          const yValue = Number(values[params.dataIndex]);
+          if (!Number.isFinite(yValue)) return;
+          const center = api.coord([params.dataIndex, yValue]);
+          const bandWidth = api.size([1, 0])[0] * 0.72;
+          const labelText = this.formatChartValue(values[params.dataIndex]);
+          const children = [
+            {
+              type: 'line',
+              shape: {
+                x1: center[0] - bandWidth / 2,
+                y1: center[1],
+                x2: center[0] + bandWidth / 2,
+                y2: center[1],
+              },
+              style: {
+                stroke: color,
+                lineWidth: 2,
+              },
+            },
+          ];
+          if (labelText) {
+            children.push({
+              type: 'text',
+              style: {
+                text: labelText,
+                x: center[0],
+                y: center[1] - 8,
+                textAlign: 'center',
+                textVerticalAlign: 'bottom',
+                fill: '#d3d6dd',
+                fontSize: 10,
+              },
+            });
+          }
+          return {
+            type: 'group',
+            children,
+          };
+        },
+        data: values,
+      };
+    },
+    isTopic4LowerBoundSeries(seriesItem) {
+      return this.currentTopic === 4
+        && seriesItem.type === 'line'
+        && /下界|下限/.test(String(seriesItem.name || ''));
+    },
     buildChartOption(chartData) {
         if (!chartData || !chartData.series) return null;
   
         const series = chartData.series.map((s, index) => {
           const colors = ['#00f0ff', '#ffd700', '#ff6b6b', '#4ecdc4', '#a855f7'];
+          const color = (s.itemStyle && s.itemStyle.color) || colors[index % colors.length];
+          if (this.isTopic4LowerBoundSeries(s)) {
+            return this.buildSegmentLineSeries(s, color);
+          }
           const hasExplicitLabels = Array.isArray(s.data)
             && s.data.some((point) => point && typeof point === 'object' && point.label);
           const showSeriesLabel = s.type === 'bar' || hasExplicitLabels;
           return {
             ...s,
-            itemStyle: s.itemStyle || { color: colors[index % colors.length] },
+            itemStyle: s.itemStyle || { color },
             smooth: s.type === 'line' ? true : s.smooth,
             label: s.label || (showSeriesLabel ? {
               show: true,
@@ -672,11 +726,10 @@ export default {
       return {
         platform: '',
         models: [],
-        rounds: this.normalizedSelectedTopic === 4 ? 300 : 1,
         board: '',
         dataset_group: '',
         load_level: '',
-        scenario: 'ascend_feiteng_feiteng',
+        scenario: '',
         model: 'resnet50',
         device: '',
         numTasks: 215,
@@ -684,22 +737,20 @@ export default {
       };
     },
 
-    onModelsChange(selected) {
-      if (!selected.includes('all')) return;
-      if (selected.length === 1) {
-        this.taskConfig.models = ['all', ...this.modelOptions];
-        return;
-      }
-      this.taskConfig.models = selected.filter((item) => item !== 'all');
+    resetTaskConfig(overrides = {}) {
+      if (this.taskRunning) return;
+      this.taskConfig = {
+        ...this.getDefaultTaskConfig(),
+        ...overrides,
+      };
+      this.taskFormKey += 1;
+      this.clearOutput();
     },
 
-    onTopic3ModelsChange(selected) {
-      if (!selected.includes('all')) return;
-      if (selected.length === 1) {
-        this.taskConfig.models = ['all', ...this.topic3ModelOptions];
-        return;
-      }
-      this.taskConfig.models = selected.filter((item) => item !== 'all');
+    onTopic3ScenarioChange(scenario) {
+      this.resetTaskConfig({
+        scenario: scenario || this.taskConfig.scenario,
+      });
     },
 
     validateTaskConfig() {
@@ -725,10 +776,12 @@ export default {
       }
       if (topicId === 3) {
         if (!this.taskConfig.scenario) {
-          this.taskConfig.scenario = 'ascend_feiteng_feiteng';
+          this.$message.warning('请选择运行场景');
+          return false;
         }
         if (!['ascend_feiteng_feiteng', 'ascend_ascend_ascend'].includes(this.taskConfig.scenario)) {
-          this.taskConfig.scenario = 'ascend_feiteng_feiteng';
+          this.$message.warning('请选择有效的运行场景');
+          return false;
         }
         if (!this.taskConfig.models.length) {
           this.$message.warning('请选择运行模型');
@@ -755,10 +808,6 @@ export default {
         this.$message.warning('请至少选择一个模型');
         return false;
       }
-      if (!this.taskConfig.rounds || this.taskConfig.rounds < 1) {
-        this.$message.warning('执行轮数至少为 1');
-        return false;
-      }
       return true;
     },
 
@@ -773,13 +822,10 @@ export default {
         };
       }
       if (topicId === 3) {
-        const models = this.taskConfig.models.includes('all')
-          ? [...this.topic3ModelOptions]
-          : [...this.taskConfig.models];
         return {
           topicId,
-          scenario: this.taskConfig.scenario || 'ascend_feiteng_feiteng',
-          models,
+          scenario: this.taskConfig.scenario,
+          models: [...this.taskConfig.models],
           numTasks: 215,
           port: 9999,
         };
@@ -791,14 +837,10 @@ export default {
           rounds: 300,
         };
       }
-      const models = this.taskConfig.models.includes('all')
-        ? ['all']
-        : [...this.taskConfig.models];
       return {
         topicId,
         platform: this.taskConfig.platform,
-        models,
-        rounds: this.taskConfig.rounds,
+        models: [...this.taskConfig.models],
       };
     },
 
@@ -811,6 +853,7 @@ export default {
       this.taskError = '';
       this.taskRunning = false;
       this.taskConfig = this.getDefaultTaskConfig();
+      this.taskFormKey += 1;
       this.runDialogVisible = true;
     },
 
@@ -1042,7 +1085,7 @@ export default {
         this.addLog(`[配置] 课题四 / ${deviceLabel}`, 'info');
       } else {
         const platformLabel = payload.platform === 'ascend' ? '昇腾' : '飞腾';
-        this.addLog(`[配置] 课题一 / ${platformLabel} / 轮数 ${payload.rounds}`, 'info');
+        this.addLog(`[配置] 课题一 / ${platformLabel}`, 'info');
         this.addLog(`[模型] ${payload.models.join(', ')}`, 'info');
       }
 
