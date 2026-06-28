@@ -6,6 +6,7 @@
     "serve": "vue-cli-service serve",
     "serve:lan": "vue-cli-service serve --host 0.0.0.0 --port 7001",
     "serve:backend": "python3 server/k3s-api.py",
+    "serve:public-proxy": "node scripts/public-auth-proxy.js",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "export-figures": "node scripts/export-mock-to-xlsx.js",

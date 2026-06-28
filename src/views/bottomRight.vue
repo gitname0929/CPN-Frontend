@@ -59,6 +59,15 @@ export default {
       const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
       return `<span${classAttr} title="${escaped}">${escaped}</span>`;
     },
+    firstDefined(...values) {
+      return values.find((value) => value !== undefined && value !== null);
+    },
+    formatUsedTotal(used, total, fallback = '') {
+      if (used === undefined || used === null || total === undefined || total === null) {
+        return fallback;
+      }
+      return `${used} / ${total}`;
+    },
     setTimer() {
       clearInterval(this.timer);
       this.fetchNodeResource();
@@ -74,12 +83,14 @@ export default {
         this.NodeData = [];
         for (let i = 0; i < data.length; i++) {
           const statusColor = data[i].nodeStatus === '正常' ? 'green' : 'red';
+          const storageUsed = this.firstDefined(data[i].storageUsed, data[i].usedStorage);
+          const storageTotal = this.firstDefined(data[i].storageTotal, data[i].maxStorage, data[i].totalStorage);
           let item = [
             this.withTooltip(data[i].nodeName, 'node-name'),
             this.withTooltip(data[i].podCount),
             this.withTooltip(data[i].cpu),
             this.withTooltip(data[i].memory),
-            this.withTooltip(data[i].storage),
+            this.withTooltip(this.formatUsedTotal(storageUsed, storageTotal, data[i].storage)),
             `<button title="${data[i].nodeStatus}" style="border-radius: 4px; min-width: 40px; padding: 0 8px; background-color: ${statusColor}; color: #fff; border: none;">${data[i].nodeStatus}</button>`
           ];
           this.NodeData.push(item);

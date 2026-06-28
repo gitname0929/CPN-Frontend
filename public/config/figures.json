@@ -74,12 +74,12 @@
       "topic": 3,
       "figures": [
         {
-          "title": "表1：昇腾端到端时延与内存资源对比",
-          "type": "table"
+          "title": "图1：昇腾和飞腾任务完成时间对比",
+          "type": "mixed"
         },
         {
-          "title": "表2：飞腾端到端时延与内存资源对比",
-          "type": "table"
+          "title": "图2：昇腾和飞腾内存资源对比",
+          "type": "mixed"
         }
       ]
     },

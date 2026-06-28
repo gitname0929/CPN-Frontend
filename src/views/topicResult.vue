@@ -196,11 +196,10 @@
         </template>
 
         <template v-else-if="normalizedSelectedTopic === 3">
-          <el-form-item label="运行场景">
+          <el-form-item label="板子类型">
             <el-select v-model="taskConfig.scenario" placeholder="请选择运行场景" style="width: 100%;">
-              <el-option label="昇腾 server / 昇腾 client" value="ascend_ascend" />
-              <el-option label="昇腾 server / 飞腾 client" value="ascend_feiteng" />
-              <el-option label="昇腾 server / 飞腾 client + 昇腾 client" value="ascend_mixed" />
+              <el-option label="飞腾" value="ascend_feiteng_feiteng" />
+              <el-option label="昇腾" value="ascend_ascend_ascend" />
             </el-select>
           </el-form-item>
           <el-form-item label="运行模型">
@@ -221,54 +220,15 @@
               />
             </el-select>
           </el-form-item>
-          <el-form-item label="统计次数">
-            <el-input-number
-              v-model="taskConfig.numTasks"
-              :min="1"
-              :max="1000"
-              :step="1"
-              style="width: 100%;"
-            />
-          </el-form-item>
-          <el-form-item label="服务端口">
-            <el-input-number
-              v-model="taskConfig.port"
-              :min="1024"
-              :max="65535"
-              :step="1"
-              style="width: 100%;"
-            />
-          </el-form-item>
-          <el-alert
-            title="昇腾 server IP: 192.168.31.154；昇腾 client IP: 192.168.31.247；飞腾 client 为当前机器。支持 1飞1昇双客户端；默认额外预热 5 次，预热不计入统计。"
-            type="info"
-            :closable="false"
-            show-icon
-          />
         </template>
 
         <template v-else-if="normalizedSelectedTopic === 4">
           <el-form-item label="执行设备">
             <el-select v-model="taskConfig.device" placeholder="请选择执行设备" style="width: 100%;">
-              <el-option label="昇腾 (192.168.31.179)" value="ascend" />
+              <el-option label="昇腾" value="ascend" />
               <el-option label="飞腾 (本机)" value="feiteng" />
             </el-select>
           </el-form-item>
-          <el-form-item label="总轮数">
-            <el-input-number
-              v-model="taskConfig.rounds"
-              :min="1"
-              :max="10000"
-              :step="1"
-              style="width: 100%;"
-            />
-          </el-form-item>
-          <el-alert
-            title="昇腾定向调用 192.168.31.179；飞腾只调用本机 127.0.0.1，避免被负载均衡。请求强度固定为 8 req/s。"
-            type="info"
-            :closable="false"
-            show-icon
-          />
         </template>
 
         <el-form-item v-else>
@@ -423,7 +383,7 @@ export default {
       board: '',
       dataset_group: '',
       load_level: '',
-      scenario: 'ascend_mixed',
+      scenario: 'ascend_feiteng_feiteng',
       model: 'resnet50',
       device: '',
       numTasks: 215,
@@ -662,7 +622,10 @@ export default {
 		const xAxis = {
 			type: 'category',
 			data: chartData.categories || [],
-			axisLabel: { color: '#d3d6dd' },
+			axisLabel: {
+          color: '#d3d6dd',
+          rotate: this.currentTopic === 3 ? 30 : 0,
+        },
 			axisLine: { lineStyle: { color: 'rgba(0, 240, 255, 0.3)' } },
 			axisTick: { show: false },
 			// 新增横坐标名称
@@ -713,7 +676,7 @@ export default {
         board: '',
         dataset_group: '',
         load_level: '',
-        scenario: 'ascend_mixed',
+        scenario: 'ascend_feiteng_feiteng',
         model: 'resnet50',
         device: '',
         numTasks: 215,
@@ -762,19 +725,13 @@ export default {
       }
       if (topicId === 3) {
         if (!this.taskConfig.scenario) {
-          this.$message.warning('请选择运行场景');
-          return false;
+          this.taskConfig.scenario = 'ascend_feiteng_feiteng';
+        }
+        if (!['ascend_feiteng_feiteng', 'ascend_ascend_ascend'].includes(this.taskConfig.scenario)) {
+          this.taskConfig.scenario = 'ascend_feiteng_feiteng';
         }
         if (!this.taskConfig.models.length) {
           this.$message.warning('请选择运行模型');
-          return false;
-        }
-        if (!this.taskConfig.numTasks || this.taskConfig.numTasks < 1) {
-          this.$message.warning('统计次数至少为 1');
-          return false;
-        }
-        if (!this.taskConfig.port || this.taskConfig.port < 1024) {
-          this.$message.warning('请填写有效服务端口');
           return false;
         }
         return true;
@@ -782,10 +739,6 @@ export default {
       if (topicId === 4) {
         if (!this.taskConfig.device) {
           this.$message.warning('请选择执行设备');
-          return false;
-        }
-        if (!this.taskConfig.rounds || this.taskConfig.rounds < 1) {
-          this.$message.warning('总轮数至少为 1');
           return false;
         }
         return true;
@@ -825,17 +778,17 @@ export default {
           : [...this.taskConfig.models];
         return {
           topicId,
-          scenario: this.taskConfig.scenario,
+          scenario: this.taskConfig.scenario || 'ascend_feiteng_feiteng',
           models,
-          numTasks: this.taskConfig.numTasks,
-          port: this.taskConfig.port,
+          numTasks: 215,
+          port: 9999,
         };
       }
       if (topicId === 4) {
         return {
           topicId,
           device: this.taskConfig.device,
-          rounds: this.taskConfig.rounds,
+          rounds: 300,
         };
       }
       const models = this.taskConfig.models.includes('all')
@@ -966,15 +919,55 @@ export default {
     normalizeTaskResultRows(result) {
       const rows = result.rows || result.resultRows || result.output || result.result || [];
       const parsedRows = Array.isArray(rows) ? rows : [];
-      if (this.normalizedSelectedTopic === 2 || this.normalizedSelectedTopic === 3 || this.normalizedSelectedTopic === 4) {
-        return parsedRows.map((row) => ({ ...row }));
+      if (this.normalizedSelectedTopic === 2) {
+        return parsedRows.map((row) => this.appendResultMetrics({
+          file_name: this.pickResultValue(row, ['file_name', 'filename', 'fileName', '文件名']) || '',
+          'mae avg': this.pickResultValue(row, ['avg', 'mae avg', 'mae_avg', 'MAE avg', 'MAE_avg', 'maeAvg']),
+        }));
       }
-      return parsedRows.map((row) => ({
+      if (this.normalizedSelectedTopic === 3) {
+        return parsedRows.map((row) => ({
+          'baseline平均延迟(ms)': this.pickResultValue(row, ['baseline平均延迟(ms)', 'baseline平均延迟', 'baseline_latency_ms', 'baselineLatencyMs', 'baseline_latency', 'baselineLatency']),
+          '模型分割后平均E2E(ms)': this.pickResultValue(row, ['模型分割后平均E2E(ms)', '模型分割后平均E2E', '双客户端平均E2E(ms)', 'split_avg_e2e_ms', 'splitAvgE2eMs', 'avg_e2e_ms', 'avgE2eMs', 'e2e_ms']),
+          '任务完成时间性能提升(%)': this.pickResultValue(row, ['任务完成时间性能提升(%)', '任务完成时间性能提升', '延迟提升(%)', 'latency_improvement_percent', 'latencyImprovementPercent', 'performance_improvement_percent', 'performanceImprovementPercent']),
+          'baseline占用内存(MB)': this.pickResultValue(row, ['baseline占用内存(MB)', 'baseline占用内存', 'baseline内存(MB)', 'baseline_memory_mb', 'baselineMemoryMb', 'baseline_memory', 'baselineMemory']),
+          '模型分割后占用内存(MB)': this.pickResultValue(row, ['模型分割后占用内存(MB)', '模型分割后占用内存', '双客户端PSS峰值均值(MB)', 'split_memory_mb', 'splitMemoryMb', 'split_memory', 'splitMemory']),
+          '内存资源节省比(%)': this.pickResultValue(row, ['内存资源节省比(%)', '内存资源节省比', '内存提升(%)', 'memory_saving_percent', 'memorySavingPercent', 'memory_save_percent', 'memorySavePercent']),
+          '任务完成时间性能提升指标': this.pickResultValue(row, ['任务完成时间性能提升指标', '推理延迟指标', 'latency_metric', 'latencyMetric']) || '10%',
+          '内存资源节省比指标': this.pickResultValue(row, ['内存资源节省比指标', '内存指标', 'memory_metric', 'memoryMetric']) || '20%',
+        }));
+      }
+      if (this.normalizedSelectedTopic === 4) {
+        return parsedRows.map((row) => this.appendResultMetrics(row));
+      }
+      return parsedRows.map((row) => this.appendResultMetrics({
         '模型': this.pickResultValue(row, ['model', 'Model', '模型']) || '',
         '平均冷到热时间(s)': this.pickResultValue(row, ['avgColdToHot', 'avg_cold_start_sec', '平均冷到热时间(s)']),
         '平均暖到热时间(s)': this.pickResultValue(row, ['avgWarmToHot', 'avg_warm_start_sec', '平均暖到热时间(s)']),
         '提升比值(%)': this.pickResultValue(row, ['improvementRatio', 'theta_percent', '提升比值(%)']),
       }));
+    },
+
+    appendResultMetrics(row) {
+      const topicId = this.normalizedSelectedTopic;
+      if (topicId === 1) {
+        return { ...row, '指标': '40%' };
+      }
+      if (topicId === 2) {
+        const metric = this.taskConfig.load_level === 'H' ? '5' : '1';
+        return { ...row, '指标': metric };
+      }
+      if (topicId === 3) {
+        return {
+          ...row,
+          '推理延迟指标': '10%',
+          '内存指标': '20%',
+        };
+      }
+      if (topicId === 4) {
+        return { ...row, '指标': '30%' };
+      }
+      return { ...row };
     },
 
     buildResultColumns(rows) {
@@ -1039,15 +1032,14 @@ export default {
         this.addLog(`[配置] 课题二 / ${boardLabel} / ${payload.dataset_group} / ${payload.load_level}`, 'info');
       } else if (payload.topicId === 3) {
         const scenarioMap = {
-          ascend_ascend: '昇腾 server / 昇腾 client',
-          ascend_feiteng: '昇腾 server / 飞腾 client',
-          ascend_mixed: '昇腾 server / 飞腾 client + 昇腾 client',
+          ascend_feiteng_feiteng: '昇腾 server / 飞腾 client x2',
+          ascend_ascend_ascend: '昇腾 server / 昇腾 client x2',
         };
         const scenarioLabel = scenarioMap[payload.scenario] || payload.scenario;
-        this.addLog(`[配置] 课题三 / ${scenarioLabel} / ${payload.models.join(', ')} / 统计 ${payload.numTasks} 次 / 预热 5 次`, 'info');
+        this.addLog(`[配置] 课题三 / ${scenarioLabel} / ${payload.models.join(', ')}`, 'info');
       } else if (payload.topicId === 4) {
-        const deviceLabel = payload.device === 'ascend' ? '昇腾 192.168.31.179' : '飞腾 本机';
-        this.addLog(`[配置] 课题四 / ${deviceLabel} / 总轮数 ${payload.rounds} / 请求强度 8 req/s`, 'info');
+        const deviceLabel = payload.device === 'ascend' ? '昇腾' : '飞腾';
+        this.addLog(`[配置] 课题四 / ${deviceLabel}`, 'info');
       } else {
         const platformLabel = payload.platform === 'ascend' ? '昇腾' : '飞腾';
         this.addLog(`[配置] 课题一 / ${platformLabel} / 轮数 ${payload.rounds}`, 'info');

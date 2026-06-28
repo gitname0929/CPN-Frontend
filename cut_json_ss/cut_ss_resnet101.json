@@ -1,0 +1,4409 @@
+{
+    "meta": {
+        "model": "ResNet101",
+        "total_segments": 311,
+        "description": "Range is [start_layer_index, end_layer_index)",
+        "input_shape": [
+            1,
+            3,
+            224,
+            224
+        ],
+        "segment_spec_version": 1,
+        "segment_policy": "leaf",
+        "segment_spec": [
+            {
+                "seg_id": 0,
+                "range": [
+                    0,
+                    1
+                ],
+                "layers": [
+                    "conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "conv1"
+            },
+            {
+                "seg_id": 1,
+                "range": [
+                    1,
+                    2
+                ],
+                "layers": [
+                    "bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "bn1"
+            },
+            {
+                "seg_id": 2,
+                "range": [
+                    2,
+                    3
+                ],
+                "layers": [
+                    "relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "relu"
+            },
+            {
+                "seg_id": 3,
+                "range": [
+                    3,
+                    4
+                ],
+                "layers": [
+                    "maxpool"
+                ],
+                "layer_types": [
+                    "MaxPool2d"
+                ],
+                "out_layer": "maxpool"
+            },
+            {
+                "seg_id": 4,
+                "range": [
+                    4,
+                    5
+                ],
+                "layers": [
+                    "layer1.0.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer1.0.conv1"
+            },
+            {
+                "seg_id": 5,
+                "range": [
+                    5,
+                    6
+                ],
+                "layers": [
+                    "layer1.0.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer1.0.bn1"
+            },
+            {
+                "seg_id": 6,
+                "range": [
+                    6,
+                    7
+                ],
+                "layers": [
+                    "layer1.0.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer1.0.relu"
+            },
+            {
+                "seg_id": 7,
+                "range": [
+                    7,
+                    8
+                ],
+                "layers": [
+                    "layer1.0.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer1.0.conv2"
+            },
+            {
+                "seg_id": 8,
+                "range": [
+                    8,
+                    9
+                ],
+                "layers": [
+                    "layer1.0.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer1.0.bn2"
+            },
+            {
+                "seg_id": 9,
+                "range": [
+                    9,
+                    10
+                ],
+                "layers": [
+                    "layer1.0.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer1.0.relu"
+            },
+            {
+                "seg_id": 10,
+                "range": [
+                    10,
+                    11
+                ],
+                "layers": [
+                    "layer1.0.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer1.0.conv3"
+            },
+            {
+                "seg_id": 11,
+                "range": [
+                    11,
+                    12
+                ],
+                "layers": [
+                    "layer1.0.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer1.0.bn3"
+            },
+            {
+                "seg_id": 12,
+                "range": [
+                    12,
+                    13
+                ],
+                "layers": [
+                    "layer1.0.downsample.0"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer1.0.downsample.0"
+            },
+            {
+                "seg_id": 13,
+                "range": [
+                    13,
+                    14
+                ],
+                "layers": [
+                    "layer1.0.downsample.1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer1.0.downsample.1"
+            },
+            {
+                "seg_id": 14,
+                "range": [
+                    14,
+                    15
+                ],
+                "layers": [
+                    "layer1.0.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer1.0.relu"
+            },
+            {
+                "seg_id": 15,
+                "range": [
+                    15,
+                    16
+                ],
+                "layers": [
+                    "layer1.1.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer1.1.conv1"
+            },
+            {
+                "seg_id": 16,
+                "range": [
+                    16,
+                    17
+                ],
+                "layers": [
+                    "layer1.1.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer1.1.bn1"
+            },
+            {
+                "seg_id": 17,
+                "range": [
+                    17,
+                    18
+                ],
+                "layers": [
+                    "layer1.1.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer1.1.relu"
+            },
+            {
+                "seg_id": 18,
+                "range": [
+                    18,
+                    19
+                ],
+                "layers": [
+                    "layer1.1.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer1.1.conv2"
+            },
+            {
+                "seg_id": 19,
+                "range": [
+                    19,
+                    20
+                ],
+                "layers": [
+                    "layer1.1.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer1.1.bn2"
+            },
+            {
+                "seg_id": 20,
+                "range": [
+                    20,
+                    21
+                ],
+                "layers": [
+                    "layer1.1.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer1.1.relu"
+            },
+            {
+                "seg_id": 21,
+                "range": [
+                    21,
+                    22
+                ],
+                "layers": [
+                    "layer1.1.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer1.1.conv3"
+            },
+            {
+                "seg_id": 22,
+                "range": [
+                    22,
+                    23
+                ],
+                "layers": [
+                    "layer1.1.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer1.1.bn3"
+            },
+            {
+                "seg_id": 23,
+                "range": [
+                    23,
+                    24
+                ],
+                "layers": [
+                    "layer1.1.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer1.1.relu"
+            },
+            {
+                "seg_id": 24,
+                "range": [
+                    24,
+                    25
+                ],
+                "layers": [
+                    "layer1.2.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer1.2.conv1"
+            },
+            {
+                "seg_id": 25,
+                "range": [
+                    25,
+                    26
+                ],
+                "layers": [
+                    "layer1.2.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer1.2.bn1"
+            },
+            {
+                "seg_id": 26,
+                "range": [
+                    26,
+                    27
+                ],
+                "layers": [
+                    "layer1.2.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer1.2.relu"
+            },
+            {
+                "seg_id": 27,
+                "range": [
+                    27,
+                    28
+                ],
+                "layers": [
+                    "layer1.2.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer1.2.conv2"
+            },
+            {
+                "seg_id": 28,
+                "range": [
+                    28,
+                    29
+                ],
+                "layers": [
+                    "layer1.2.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer1.2.bn2"
+            },
+            {
+                "seg_id": 29,
+                "range": [
+                    29,
+                    30
+                ],
+                "layers": [
+                    "layer1.2.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer1.2.relu"
+            },
+            {
+                "seg_id": 30,
+                "range": [
+                    30,
+                    31
+                ],
+                "layers": [
+                    "layer1.2.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer1.2.conv3"
+            },
+            {
+                "seg_id": 31,
+                "range": [
+                    31,
+                    32
+                ],
+                "layers": [
+                    "layer1.2.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer1.2.bn3"
+            },
+            {
+                "seg_id": 32,
+                "range": [
+                    32,
+                    33
+                ],
+                "layers": [
+                    "layer1.2.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer1.2.relu"
+            },
+            {
+                "seg_id": 33,
+                "range": [
+                    33,
+                    34
+                ],
+                "layers": [
+                    "layer2.0.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer2.0.conv1"
+            },
+            {
+                "seg_id": 34,
+                "range": [
+                    34,
+                    35
+                ],
+                "layers": [
+                    "layer2.0.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer2.0.bn1"
+            },
+            {
+                "seg_id": 35,
+                "range": [
+                    35,
+                    36
+                ],
+                "layers": [
+                    "layer2.0.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer2.0.relu"
+            },
+            {
+                "seg_id": 36,
+                "range": [
+                    36,
+                    37
+                ],
+                "layers": [
+                    "layer2.0.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer2.0.conv2"
+            },
+            {
+                "seg_id": 37,
+                "range": [
+                    37,
+                    38
+                ],
+                "layers": [
+                    "layer2.0.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer2.0.bn2"
+            },
+            {
+                "seg_id": 38,
+                "range": [
+                    38,
+                    39
+                ],
+                "layers": [
+                    "layer2.0.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer2.0.relu"
+            },
+            {
+                "seg_id": 39,
+                "range": [
+                    39,
+                    40
+                ],
+                "layers": [
+                    "layer2.0.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer2.0.conv3"
+            },
+            {
+                "seg_id": 40,
+                "range": [
+                    40,
+                    41
+                ],
+                "layers": [
+                    "layer2.0.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer2.0.bn3"
+            },
+            {
+                "seg_id": 41,
+                "range": [
+                    41,
+                    42
+                ],
+                "layers": [
+                    "layer2.0.downsample.0"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer2.0.downsample.0"
+            },
+            {
+                "seg_id": 42,
+                "range": [
+                    42,
+                    43
+                ],
+                "layers": [
+                    "layer2.0.downsample.1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer2.0.downsample.1"
+            },
+            {
+                "seg_id": 43,
+                "range": [
+                    43,
+                    44
+                ],
+                "layers": [
+                    "layer2.0.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer2.0.relu"
+            },
+            {
+                "seg_id": 44,
+                "range": [
+                    44,
+                    45
+                ],
+                "layers": [
+                    "layer2.1.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer2.1.conv1"
+            },
+            {
+                "seg_id": 45,
+                "range": [
+                    45,
+                    46
+                ],
+                "layers": [
+                    "layer2.1.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer2.1.bn1"
+            },
+            {
+                "seg_id": 46,
+                "range": [
+                    46,
+                    47
+                ],
+                "layers": [
+                    "layer2.1.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer2.1.relu"
+            },
+            {
+                "seg_id": 47,
+                "range": [
+                    47,
+                    48
+                ],
+                "layers": [
+                    "layer2.1.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer2.1.conv2"
+            },
+            {
+                "seg_id": 48,
+                "range": [
+                    48,
+                    49
+                ],
+                "layers": [
+                    "layer2.1.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer2.1.bn2"
+            },
+            {
+                "seg_id": 49,
+                "range": [
+                    49,
+                    50
+                ],
+                "layers": [
+                    "layer2.1.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer2.1.relu"
+            },
+            {
+                "seg_id": 50,
+                "range": [
+                    50,
+                    51
+                ],
+                "layers": [
+                    "layer2.1.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer2.1.conv3"
+            },
+            {
+                "seg_id": 51,
+                "range": [
+                    51,
+                    52
+                ],
+                "layers": [
+                    "layer2.1.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer2.1.bn3"
+            },
+            {
+                "seg_id": 52,
+                "range": [
+                    52,
+                    53
+                ],
+                "layers": [
+                    "layer2.1.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer2.1.relu"
+            },
+            {
+                "seg_id": 53,
+                "range": [
+                    53,
+                    54
+                ],
+                "layers": [
+                    "layer2.2.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer2.2.conv1"
+            },
+            {
+                "seg_id": 54,
+                "range": [
+                    54,
+                    55
+                ],
+                "layers": [
+                    "layer2.2.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer2.2.bn1"
+            },
+            {
+                "seg_id": 55,
+                "range": [
+                    55,
+                    56
+                ],
+                "layers": [
+                    "layer2.2.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer2.2.relu"
+            },
+            {
+                "seg_id": 56,
+                "range": [
+                    56,
+                    57
+                ],
+                "layers": [
+                    "layer2.2.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer2.2.conv2"
+            },
+            {
+                "seg_id": 57,
+                "range": [
+                    57,
+                    58
+                ],
+                "layers": [
+                    "layer2.2.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer2.2.bn2"
+            },
+            {
+                "seg_id": 58,
+                "range": [
+                    58,
+                    59
+                ],
+                "layers": [
+                    "layer2.2.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer2.2.relu"
+            },
+            {
+                "seg_id": 59,
+                "range": [
+                    59,
+                    60
+                ],
+                "layers": [
+                    "layer2.2.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer2.2.conv3"
+            },
+            {
+                "seg_id": 60,
+                "range": [
+                    60,
+                    61
+                ],
+                "layers": [
+                    "layer2.2.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer2.2.bn3"
+            },
+            {
+                "seg_id": 61,
+                "range": [
+                    61,
+                    62
+                ],
+                "layers": [
+                    "layer2.2.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer2.2.relu"
+            },
+            {
+                "seg_id": 62,
+                "range": [
+                    62,
+                    63
+                ],
+                "layers": [
+                    "layer2.3.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer2.3.conv1"
+            },
+            {
+                "seg_id": 63,
+                "range": [
+                    63,
+                    64
+                ],
+                "layers": [
+                    "layer2.3.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer2.3.bn1"
+            },
+            {
+                "seg_id": 64,
+                "range": [
+                    64,
+                    65
+                ],
+                "layers": [
+                    "layer2.3.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer2.3.relu"
+            },
+            {
+                "seg_id": 65,
+                "range": [
+                    65,
+                    66
+                ],
+                "layers": [
+                    "layer2.3.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer2.3.conv2"
+            },
+            {
+                "seg_id": 66,
+                "range": [
+                    66,
+                    67
+                ],
+                "layers": [
+                    "layer2.3.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer2.3.bn2"
+            },
+            {
+                "seg_id": 67,
+                "range": [
+                    67,
+                    68
+                ],
+                "layers": [
+                    "layer2.3.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer2.3.relu"
+            },
+            {
+                "seg_id": 68,
+                "range": [
+                    68,
+                    69
+                ],
+                "layers": [
+                    "layer2.3.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer2.3.conv3"
+            },
+            {
+                "seg_id": 69,
+                "range": [
+                    69,
+                    70
+                ],
+                "layers": [
+                    "layer2.3.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer2.3.bn3"
+            },
+            {
+                "seg_id": 70,
+                "range": [
+                    70,
+                    71
+                ],
+                "layers": [
+                    "layer2.3.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer2.3.relu"
+            },
+            {
+                "seg_id": 71,
+                "range": [
+                    71,
+                    72
+                ],
+                "layers": [
+                    "layer3.0.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.0.conv1"
+            },
+            {
+                "seg_id": 72,
+                "range": [
+                    72,
+                    73
+                ],
+                "layers": [
+                    "layer3.0.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.0.bn1"
+            },
+            {
+                "seg_id": 73,
+                "range": [
+                    73,
+                    74
+                ],
+                "layers": [
+                    "layer3.0.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.0.relu"
+            },
+            {
+                "seg_id": 74,
+                "range": [
+                    74,
+                    75
+                ],
+                "layers": [
+                    "layer3.0.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.0.conv2"
+            },
+            {
+                "seg_id": 75,
+                "range": [
+                    75,
+                    76
+                ],
+                "layers": [
+                    "layer3.0.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.0.bn2"
+            },
+            {
+                "seg_id": 76,
+                "range": [
+                    76,
+                    77
+                ],
+                "layers": [
+                    "layer3.0.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.0.relu"
+            },
+            {
+                "seg_id": 77,
+                "range": [
+                    77,
+                    78
+                ],
+                "layers": [
+                    "layer3.0.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.0.conv3"
+            },
+            {
+                "seg_id": 78,
+                "range": [
+                    78,
+                    79
+                ],
+                "layers": [
+                    "layer3.0.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.0.bn3"
+            },
+            {
+                "seg_id": 79,
+                "range": [
+                    79,
+                    80
+                ],
+                "layers": [
+                    "layer3.0.downsample.0"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.0.downsample.0"
+            },
+            {
+                "seg_id": 80,
+                "range": [
+                    80,
+                    81
+                ],
+                "layers": [
+                    "layer3.0.downsample.1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.0.downsample.1"
+            },
+            {
+                "seg_id": 81,
+                "range": [
+                    81,
+                    82
+                ],
+                "layers": [
+                    "layer3.0.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.0.relu"
+            },
+            {
+                "seg_id": 82,
+                "range": [
+                    82,
+                    83
+                ],
+                "layers": [
+                    "layer3.1.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.1.conv1"
+            },
+            {
+                "seg_id": 83,
+                "range": [
+                    83,
+                    84
+                ],
+                "layers": [
+                    "layer3.1.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.1.bn1"
+            },
+            {
+                "seg_id": 84,
+                "range": [
+                    84,
+                    85
+                ],
+                "layers": [
+                    "layer3.1.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.1.relu"
+            },
+            {
+                "seg_id": 85,
+                "range": [
+                    85,
+                    86
+                ],
+                "layers": [
+                    "layer3.1.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.1.conv2"
+            },
+            {
+                "seg_id": 86,
+                "range": [
+                    86,
+                    87
+                ],
+                "layers": [
+                    "layer3.1.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.1.bn2"
+            },
+            {
+                "seg_id": 87,
+                "range": [
+                    87,
+                    88
+                ],
+                "layers": [
+                    "layer3.1.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.1.relu"
+            },
+            {
+                "seg_id": 88,
+                "range": [
+                    88,
+                    89
+                ],
+                "layers": [
+                    "layer3.1.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.1.conv3"
+            },
+            {
+                "seg_id": 89,
+                "range": [
+                    89,
+                    90
+                ],
+                "layers": [
+                    "layer3.1.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.1.bn3"
+            },
+            {
+                "seg_id": 90,
+                "range": [
+                    90,
+                    91
+                ],
+                "layers": [
+                    "layer3.1.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.1.relu"
+            },
+            {
+                "seg_id": 91,
+                "range": [
+                    91,
+                    92
+                ],
+                "layers": [
+                    "layer3.2.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.2.conv1"
+            },
+            {
+                "seg_id": 92,
+                "range": [
+                    92,
+                    93
+                ],
+                "layers": [
+                    "layer3.2.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.2.bn1"
+            },
+            {
+                "seg_id": 93,
+                "range": [
+                    93,
+                    94
+                ],
+                "layers": [
+                    "layer3.2.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.2.relu"
+            },
+            {
+                "seg_id": 94,
+                "range": [
+                    94,
+                    95
+                ],
+                "layers": [
+                    "layer3.2.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.2.conv2"
+            },
+            {
+                "seg_id": 95,
+                "range": [
+                    95,
+                    96
+                ],
+                "layers": [
+                    "layer3.2.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.2.bn2"
+            },
+            {
+                "seg_id": 96,
+                "range": [
+                    96,
+                    97
+                ],
+                "layers": [
+                    "layer3.2.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.2.relu"
+            },
+            {
+                "seg_id": 97,
+                "range": [
+                    97,
+                    98
+                ],
+                "layers": [
+                    "layer3.2.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.2.conv3"
+            },
+            {
+                "seg_id": 98,
+                "range": [
+                    98,
+                    99
+                ],
+                "layers": [
+                    "layer3.2.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.2.bn3"
+            },
+            {
+                "seg_id": 99,
+                "range": [
+                    99,
+                    100
+                ],
+                "layers": [
+                    "layer3.2.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.2.relu"
+            },
+            {
+                "seg_id": 100,
+                "range": [
+                    100,
+                    101
+                ],
+                "layers": [
+                    "layer3.3.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.3.conv1"
+            },
+            {
+                "seg_id": 101,
+                "range": [
+                    101,
+                    102
+                ],
+                "layers": [
+                    "layer3.3.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.3.bn1"
+            },
+            {
+                "seg_id": 102,
+                "range": [
+                    102,
+                    103
+                ],
+                "layers": [
+                    "layer3.3.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.3.relu"
+            },
+            {
+                "seg_id": 103,
+                "range": [
+                    103,
+                    104
+                ],
+                "layers": [
+                    "layer3.3.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.3.conv2"
+            },
+            {
+                "seg_id": 104,
+                "range": [
+                    104,
+                    105
+                ],
+                "layers": [
+                    "layer3.3.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.3.bn2"
+            },
+            {
+                "seg_id": 105,
+                "range": [
+                    105,
+                    106
+                ],
+                "layers": [
+                    "layer3.3.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.3.relu"
+            },
+            {
+                "seg_id": 106,
+                "range": [
+                    106,
+                    107
+                ],
+                "layers": [
+                    "layer3.3.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.3.conv3"
+            },
+            {
+                "seg_id": 107,
+                "range": [
+                    107,
+                    108
+                ],
+                "layers": [
+                    "layer3.3.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.3.bn3"
+            },
+            {
+                "seg_id": 108,
+                "range": [
+                    108,
+                    109
+                ],
+                "layers": [
+                    "layer3.3.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.3.relu"
+            },
+            {
+                "seg_id": 109,
+                "range": [
+                    109,
+                    110
+                ],
+                "layers": [
+                    "layer3.4.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.4.conv1"
+            },
+            {
+                "seg_id": 110,
+                "range": [
+                    110,
+                    111
+                ],
+                "layers": [
+                    "layer3.4.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.4.bn1"
+            },
+            {
+                "seg_id": 111,
+                "range": [
+                    111,
+                    112
+                ],
+                "layers": [
+                    "layer3.4.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.4.relu"
+            },
+            {
+                "seg_id": 112,
+                "range": [
+                    112,
+                    113
+                ],
+                "layers": [
+                    "layer3.4.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.4.conv2"
+            },
+            {
+                "seg_id": 113,
+                "range": [
+                    113,
+                    114
+                ],
+                "layers": [
+                    "layer3.4.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.4.bn2"
+            },
+            {
+                "seg_id": 114,
+                "range": [
+                    114,
+                    115
+                ],
+                "layers": [
+                    "layer3.4.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.4.relu"
+            },
+            {
+                "seg_id": 115,
+                "range": [
+                    115,
+                    116
+                ],
+                "layers": [
+                    "layer3.4.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.4.conv3"
+            },
+            {
+                "seg_id": 116,
+                "range": [
+                    116,
+                    117
+                ],
+                "layers": [
+                    "layer3.4.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.4.bn3"
+            },
+            {
+                "seg_id": 117,
+                "range": [
+                    117,
+                    118
+                ],
+                "layers": [
+                    "layer3.4.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.4.relu"
+            },
+            {
+                "seg_id": 118,
+                "range": [
+                    118,
+                    119
+                ],
+                "layers": [
+                    "layer3.5.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.5.conv1"
+            },
+            {
+                "seg_id": 119,
+                "range": [
+                    119,
+                    120
+                ],
+                "layers": [
+                    "layer3.5.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.5.bn1"
+            },
+            {
+                "seg_id": 120,
+                "range": [
+                    120,
+                    121
+                ],
+                "layers": [
+                    "layer3.5.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.5.relu"
+            },
+            {
+                "seg_id": 121,
+                "range": [
+                    121,
+                    122
+                ],
+                "layers": [
+                    "layer3.5.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.5.conv2"
+            },
+            {
+                "seg_id": 122,
+                "range": [
+                    122,
+                    123
+                ],
+                "layers": [
+                    "layer3.5.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.5.bn2"
+            },
+            {
+                "seg_id": 123,
+                "range": [
+                    123,
+                    124
+                ],
+                "layers": [
+                    "layer3.5.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.5.relu"
+            },
+            {
+                "seg_id": 124,
+                "range": [
+                    124,
+                    125
+                ],
+                "layers": [
+                    "layer3.5.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.5.conv3"
+            },
+            {
+                "seg_id": 125,
+                "range": [
+                    125,
+                    126
+                ],
+                "layers": [
+                    "layer3.5.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.5.bn3"
+            },
+            {
+                "seg_id": 126,
+                "range": [
+                    126,
+                    127
+                ],
+                "layers": [
+                    "layer3.5.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.5.relu"
+            },
+            {
+                "seg_id": 127,
+                "range": [
+                    127,
+                    128
+                ],
+                "layers": [
+                    "layer3.6.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.6.conv1"
+            },
+            {
+                "seg_id": 128,
+                "range": [
+                    128,
+                    129
+                ],
+                "layers": [
+                    "layer3.6.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.6.bn1"
+            },
+            {
+                "seg_id": 129,
+                "range": [
+                    129,
+                    130
+                ],
+                "layers": [
+                    "layer3.6.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.6.relu"
+            },
+            {
+                "seg_id": 130,
+                "range": [
+                    130,
+                    131
+                ],
+                "layers": [
+                    "layer3.6.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.6.conv2"
+            },
+            {
+                "seg_id": 131,
+                "range": [
+                    131,
+                    132
+                ],
+                "layers": [
+                    "layer3.6.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.6.bn2"
+            },
+            {
+                "seg_id": 132,
+                "range": [
+                    132,
+                    133
+                ],
+                "layers": [
+                    "layer3.6.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.6.relu"
+            },
+            {
+                "seg_id": 133,
+                "range": [
+                    133,
+                    134
+                ],
+                "layers": [
+                    "layer3.6.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.6.conv3"
+            },
+            {
+                "seg_id": 134,
+                "range": [
+                    134,
+                    135
+                ],
+                "layers": [
+                    "layer3.6.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.6.bn3"
+            },
+            {
+                "seg_id": 135,
+                "range": [
+                    135,
+                    136
+                ],
+                "layers": [
+                    "layer3.6.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.6.relu"
+            },
+            {
+                "seg_id": 136,
+                "range": [
+                    136,
+                    137
+                ],
+                "layers": [
+                    "layer3.7.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.7.conv1"
+            },
+            {
+                "seg_id": 137,
+                "range": [
+                    137,
+                    138
+                ],
+                "layers": [
+                    "layer3.7.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.7.bn1"
+            },
+            {
+                "seg_id": 138,
+                "range": [
+                    138,
+                    139
+                ],
+                "layers": [
+                    "layer3.7.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.7.relu"
+            },
+            {
+                "seg_id": 139,
+                "range": [
+                    139,
+                    140
+                ],
+                "layers": [
+                    "layer3.7.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.7.conv2"
+            },
+            {
+                "seg_id": 140,
+                "range": [
+                    140,
+                    141
+                ],
+                "layers": [
+                    "layer3.7.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.7.bn2"
+            },
+            {
+                "seg_id": 141,
+                "range": [
+                    141,
+                    142
+                ],
+                "layers": [
+                    "layer3.7.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.7.relu"
+            },
+            {
+                "seg_id": 142,
+                "range": [
+                    142,
+                    143
+                ],
+                "layers": [
+                    "layer3.7.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.7.conv3"
+            },
+            {
+                "seg_id": 143,
+                "range": [
+                    143,
+                    144
+                ],
+                "layers": [
+                    "layer3.7.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.7.bn3"
+            },
+            {
+                "seg_id": 144,
+                "range": [
+                    144,
+                    145
+                ],
+                "layers": [
+                    "layer3.7.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.7.relu"
+            },
+            {
+                "seg_id": 145,
+                "range": [
+                    145,
+                    146
+                ],
+                "layers": [
+                    "layer3.8.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.8.conv1"
+            },
+            {
+                "seg_id": 146,
+                "range": [
+                    146,
+                    147
+                ],
+                "layers": [
+                    "layer3.8.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.8.bn1"
+            },
+            {
+                "seg_id": 147,
+                "range": [
+                    147,
+                    148
+                ],
+                "layers": [
+                    "layer3.8.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.8.relu"
+            },
+            {
+                "seg_id": 148,
+                "range": [
+                    148,
+                    149
+                ],
+                "layers": [
+                    "layer3.8.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.8.conv2"
+            },
+            {
+                "seg_id": 149,
+                "range": [
+                    149,
+                    150
+                ],
+                "layers": [
+                    "layer3.8.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.8.bn2"
+            },
+            {
+                "seg_id": 150,
+                "range": [
+                    150,
+                    151
+                ],
+                "layers": [
+                    "layer3.8.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.8.relu"
+            },
+            {
+                "seg_id": 151,
+                "range": [
+                    151,
+                    152
+                ],
+                "layers": [
+                    "layer3.8.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.8.conv3"
+            },
+            {
+                "seg_id": 152,
+                "range": [
+                    152,
+                    153
+                ],
+                "layers": [
+                    "layer3.8.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.8.bn3"
+            },
+            {
+                "seg_id": 153,
+                "range": [
+                    153,
+                    154
+                ],
+                "layers": [
+                    "layer3.8.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.8.relu"
+            },
+            {
+                "seg_id": 154,
+                "range": [
+                    154,
+                    155
+                ],
+                "layers": [
+                    "layer3.9.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.9.conv1"
+            },
+            {
+                "seg_id": 155,
+                "range": [
+                    155,
+                    156
+                ],
+                "layers": [
+                    "layer3.9.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.9.bn1"
+            },
+            {
+                "seg_id": 156,
+                "range": [
+                    156,
+                    157
+                ],
+                "layers": [
+                    "layer3.9.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.9.relu"
+            },
+            {
+                "seg_id": 157,
+                "range": [
+                    157,
+                    158
+                ],
+                "layers": [
+                    "layer3.9.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.9.conv2"
+            },
+            {
+                "seg_id": 158,
+                "range": [
+                    158,
+                    159
+                ],
+                "layers": [
+                    "layer3.9.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.9.bn2"
+            },
+            {
+                "seg_id": 159,
+                "range": [
+                    159,
+                    160
+                ],
+                "layers": [
+                    "layer3.9.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.9.relu"
+            },
+            {
+                "seg_id": 160,
+                "range": [
+                    160,
+                    161
+                ],
+                "layers": [
+                    "layer3.9.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.9.conv3"
+            },
+            {
+                "seg_id": 161,
+                "range": [
+                    161,
+                    162
+                ],
+                "layers": [
+                    "layer3.9.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.9.bn3"
+            },
+            {
+                "seg_id": 162,
+                "range": [
+                    162,
+                    163
+                ],
+                "layers": [
+                    "layer3.9.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.9.relu"
+            },
+            {
+                "seg_id": 163,
+                "range": [
+                    163,
+                    164
+                ],
+                "layers": [
+                    "layer3.10.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.10.conv1"
+            },
+            {
+                "seg_id": 164,
+                "range": [
+                    164,
+                    165
+                ],
+                "layers": [
+                    "layer3.10.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.10.bn1"
+            },
+            {
+                "seg_id": 165,
+                "range": [
+                    165,
+                    166
+                ],
+                "layers": [
+                    "layer3.10.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.10.relu"
+            },
+            {
+                "seg_id": 166,
+                "range": [
+                    166,
+                    167
+                ],
+                "layers": [
+                    "layer3.10.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.10.conv2"
+            },
+            {
+                "seg_id": 167,
+                "range": [
+                    167,
+                    168
+                ],
+                "layers": [
+                    "layer3.10.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.10.bn2"
+            },
+            {
+                "seg_id": 168,
+                "range": [
+                    168,
+                    169
+                ],
+                "layers": [
+                    "layer3.10.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.10.relu"
+            },
+            {
+                "seg_id": 169,
+                "range": [
+                    169,
+                    170
+                ],
+                "layers": [
+                    "layer3.10.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.10.conv3"
+            },
+            {
+                "seg_id": 170,
+                "range": [
+                    170,
+                    171
+                ],
+                "layers": [
+                    "layer3.10.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.10.bn3"
+            },
+            {
+                "seg_id": 171,
+                "range": [
+                    171,
+                    172
+                ],
+                "layers": [
+                    "layer3.10.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.10.relu"
+            },
+            {
+                "seg_id": 172,
+                "range": [
+                    172,
+                    173
+                ],
+                "layers": [
+                    "layer3.11.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.11.conv1"
+            },
+            {
+                "seg_id": 173,
+                "range": [
+                    173,
+                    174
+                ],
+                "layers": [
+                    "layer3.11.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.11.bn1"
+            },
+            {
+                "seg_id": 174,
+                "range": [
+                    174,
+                    175
+                ],
+                "layers": [
+                    "layer3.11.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.11.relu"
+            },
+            {
+                "seg_id": 175,
+                "range": [
+                    175,
+                    176
+                ],
+                "layers": [
+                    "layer3.11.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.11.conv2"
+            },
+            {
+                "seg_id": 176,
+                "range": [
+                    176,
+                    177
+                ],
+                "layers": [
+                    "layer3.11.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.11.bn2"
+            },
+            {
+                "seg_id": 177,
+                "range": [
+                    177,
+                    178
+                ],
+                "layers": [
+                    "layer3.11.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.11.relu"
+            },
+            {
+                "seg_id": 178,
+                "range": [
+                    178,
+                    179
+                ],
+                "layers": [
+                    "layer3.11.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.11.conv3"
+            },
+            {
+                "seg_id": 179,
+                "range": [
+                    179,
+                    180
+                ],
+                "layers": [
+                    "layer3.11.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.11.bn3"
+            },
+            {
+                "seg_id": 180,
+                "range": [
+                    180,
+                    181
+                ],
+                "layers": [
+                    "layer3.11.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.11.relu"
+            },
+            {
+                "seg_id": 181,
+                "range": [
+                    181,
+                    182
+                ],
+                "layers": [
+                    "layer3.12.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.12.conv1"
+            },
+            {
+                "seg_id": 182,
+                "range": [
+                    182,
+                    183
+                ],
+                "layers": [
+                    "layer3.12.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.12.bn1"
+            },
+            {
+                "seg_id": 183,
+                "range": [
+                    183,
+                    184
+                ],
+                "layers": [
+                    "layer3.12.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.12.relu"
+            },
+            {
+                "seg_id": 184,
+                "range": [
+                    184,
+                    185
+                ],
+                "layers": [
+                    "layer3.12.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.12.conv2"
+            },
+            {
+                "seg_id": 185,
+                "range": [
+                    185,
+                    186
+                ],
+                "layers": [
+                    "layer3.12.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.12.bn2"
+            },
+            {
+                "seg_id": 186,
+                "range": [
+                    186,
+                    187
+                ],
+                "layers": [
+                    "layer3.12.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.12.relu"
+            },
+            {
+                "seg_id": 187,
+                "range": [
+                    187,
+                    188
+                ],
+                "layers": [
+                    "layer3.12.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.12.conv3"
+            },
+            {
+                "seg_id": 188,
+                "range": [
+                    188,
+                    189
+                ],
+                "layers": [
+                    "layer3.12.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.12.bn3"
+            },
+            {
+                "seg_id": 189,
+                "range": [
+                    189,
+                    190
+                ],
+                "layers": [
+                    "layer3.12.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.12.relu"
+            },
+            {
+                "seg_id": 190,
+                "range": [
+                    190,
+                    191
+                ],
+                "layers": [
+                    "layer3.13.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.13.conv1"
+            },
+            {
+                "seg_id": 191,
+                "range": [
+                    191,
+                    192
+                ],
+                "layers": [
+                    "layer3.13.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.13.bn1"
+            },
+            {
+                "seg_id": 192,
+                "range": [
+                    192,
+                    193
+                ],
+                "layers": [
+                    "layer3.13.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.13.relu"
+            },
+            {
+                "seg_id": 193,
+                "range": [
+                    193,
+                    194
+                ],
+                "layers": [
+                    "layer3.13.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.13.conv2"
+            },
+            {
+                "seg_id": 194,
+                "range": [
+                    194,
+                    195
+                ],
+                "layers": [
+                    "layer3.13.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.13.bn2"
+            },
+            {
+                "seg_id": 195,
+                "range": [
+                    195,
+                    196
+                ],
+                "layers": [
+                    "layer3.13.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.13.relu"
+            },
+            {
+                "seg_id": 196,
+                "range": [
+                    196,
+                    197
+                ],
+                "layers": [
+                    "layer3.13.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.13.conv3"
+            },
+            {
+                "seg_id": 197,
+                "range": [
+                    197,
+                    198
+                ],
+                "layers": [
+                    "layer3.13.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.13.bn3"
+            },
+            {
+                "seg_id": 198,
+                "range": [
+                    198,
+                    199
+                ],
+                "layers": [
+                    "layer3.13.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.13.relu"
+            },
+            {
+                "seg_id": 199,
+                "range": [
+                    199,
+                    200
+                ],
+                "layers": [
+                    "layer3.14.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.14.conv1"
+            },
+            {
+                "seg_id": 200,
+                "range": [
+                    200,
+                    201
+                ],
+                "layers": [
+                    "layer3.14.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.14.bn1"
+            },
+            {
+                "seg_id": 201,
+                "range": [
+                    201,
+                    202
+                ],
+                "layers": [
+                    "layer3.14.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.14.relu"
+            },
+            {
+                "seg_id": 202,
+                "range": [
+                    202,
+                    203
+                ],
+                "layers": [
+                    "layer3.14.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.14.conv2"
+            },
+            {
+                "seg_id": 203,
+                "range": [
+                    203,
+                    204
+                ],
+                "layers": [
+                    "layer3.14.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.14.bn2"
+            },
+            {
+                "seg_id": 204,
+                "range": [
+                    204,
+                    205
+                ],
+                "layers": [
+                    "layer3.14.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.14.relu"
+            },
+            {
+                "seg_id": 205,
+                "range": [
+                    205,
+                    206
+                ],
+                "layers": [
+                    "layer3.14.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.14.conv3"
+            },
+            {
+                "seg_id": 206,
+                "range": [
+                    206,
+                    207
+                ],
+                "layers": [
+                    "layer3.14.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.14.bn3"
+            },
+            {
+                "seg_id": 207,
+                "range": [
+                    207,
+                    208
+                ],
+                "layers": [
+                    "layer3.14.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.14.relu"
+            },
+            {
+                "seg_id": 208,
+                "range": [
+                    208,
+                    209
+                ],
+                "layers": [
+                    "layer3.15.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.15.conv1"
+            },
+            {
+                "seg_id": 209,
+                "range": [
+                    209,
+                    210
+                ],
+                "layers": [
+                    "layer3.15.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.15.bn1"
+            },
+            {
+                "seg_id": 210,
+                "range": [
+                    210,
+                    211
+                ],
+                "layers": [
+                    "layer3.15.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.15.relu"
+            },
+            {
+                "seg_id": 211,
+                "range": [
+                    211,
+                    212
+                ],
+                "layers": [
+                    "layer3.15.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.15.conv2"
+            },
+            {
+                "seg_id": 212,
+                "range": [
+                    212,
+                    213
+                ],
+                "layers": [
+                    "layer3.15.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.15.bn2"
+            },
+            {
+                "seg_id": 213,
+                "range": [
+                    213,
+                    214
+                ],
+                "layers": [
+                    "layer3.15.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.15.relu"
+            },
+            {
+                "seg_id": 214,
+                "range": [
+                    214,
+                    215
+                ],
+                "layers": [
+                    "layer3.15.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.15.conv3"
+            },
+            {
+                "seg_id": 215,
+                "range": [
+                    215,
+                    216
+                ],
+                "layers": [
+                    "layer3.15.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.15.bn3"
+            },
+            {
+                "seg_id": 216,
+                "range": [
+                    216,
+                    217
+                ],
+                "layers": [
+                    "layer3.15.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.15.relu"
+            },
+            {
+                "seg_id": 217,
+                "range": [
+                    217,
+                    218
+                ],
+                "layers": [
+                    "layer3.16.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.16.conv1"
+            },
+            {
+                "seg_id": 218,
+                "range": [
+                    218,
+                    219
+                ],
+                "layers": [
+                    "layer3.16.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.16.bn1"
+            },
+            {
+                "seg_id": 219,
+                "range": [
+                    219,
+                    220
+                ],
+                "layers": [
+                    "layer3.16.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.16.relu"
+            },
+            {
+                "seg_id": 220,
+                "range": [
+                    220,
+                    221
+                ],
+                "layers": [
+                    "layer3.16.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.16.conv2"
+            },
+            {
+                "seg_id": 221,
+                "range": [
+                    221,
+                    222
+                ],
+                "layers": [
+                    "layer3.16.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.16.bn2"
+            },
+            {
+                "seg_id": 222,
+                "range": [
+                    222,
+                    223
+                ],
+                "layers": [
+                    "layer3.16.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.16.relu"
+            },
+            {
+                "seg_id": 223,
+                "range": [
+                    223,
+                    224
+                ],
+                "layers": [
+                    "layer3.16.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.16.conv3"
+            },
+            {
+                "seg_id": 224,
+                "range": [
+                    224,
+                    225
+                ],
+                "layers": [
+                    "layer3.16.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.16.bn3"
+            },
+            {
+                "seg_id": 225,
+                "range": [
+                    225,
+                    226
+                ],
+                "layers": [
+                    "layer3.16.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.16.relu"
+            },
+            {
+                "seg_id": 226,
+                "range": [
+                    226,
+                    227
+                ],
+                "layers": [
+                    "layer3.17.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.17.conv1"
+            },
+            {
+                "seg_id": 227,
+                "range": [
+                    227,
+                    228
+                ],
+                "layers": [
+                    "layer3.17.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.17.bn1"
+            },
+            {
+                "seg_id": 228,
+                "range": [
+                    228,
+                    229
+                ],
+                "layers": [
+                    "layer3.17.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.17.relu"
+            },
+            {
+                "seg_id": 229,
+                "range": [
+                    229,
+                    230
+                ],
+                "layers": [
+                    "layer3.17.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.17.conv2"
+            },
+            {
+                "seg_id": 230,
+                "range": [
+                    230,
+                    231
+                ],
+                "layers": [
+                    "layer3.17.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.17.bn2"
+            },
+            {
+                "seg_id": 231,
+                "range": [
+                    231,
+                    232
+                ],
+                "layers": [
+                    "layer3.17.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.17.relu"
+            },
+            {
+                "seg_id": 232,
+                "range": [
+                    232,
+                    233
+                ],
+                "layers": [
+                    "layer3.17.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.17.conv3"
+            },
+            {
+                "seg_id": 233,
+                "range": [
+                    233,
+                    234
+                ],
+                "layers": [
+                    "layer3.17.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.17.bn3"
+            },
+            {
+                "seg_id": 234,
+                "range": [
+                    234,
+                    235
+                ],
+                "layers": [
+                    "layer3.17.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.17.relu"
+            },
+            {
+                "seg_id": 235,
+                "range": [
+                    235,
+                    236
+                ],
+                "layers": [
+                    "layer3.18.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.18.conv1"
+            },
+            {
+                "seg_id": 236,
+                "range": [
+                    236,
+                    237
+                ],
+                "layers": [
+                    "layer3.18.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.18.bn1"
+            },
+            {
+                "seg_id": 237,
+                "range": [
+                    237,
+                    238
+                ],
+                "layers": [
+                    "layer3.18.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.18.relu"
+            },
+            {
+                "seg_id": 238,
+                "range": [
+                    238,
+                    239
+                ],
+                "layers": [
+                    "layer3.18.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.18.conv2"
+            },
+            {
+                "seg_id": 239,
+                "range": [
+                    239,
+                    240
+                ],
+                "layers": [
+                    "layer3.18.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.18.bn2"
+            },
+            {
+                "seg_id": 240,
+                "range": [
+                    240,
+                    241
+                ],
+                "layers": [
+                    "layer3.18.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.18.relu"
+            },
+            {
+                "seg_id": 241,
+                "range": [
+                    241,
+                    242
+                ],
+                "layers": [
+                    "layer3.18.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.18.conv3"
+            },
+            {
+                "seg_id": 242,
+                "range": [
+                    242,
+                    243
+                ],
+                "layers": [
+                    "layer3.18.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.18.bn3"
+            },
+            {
+                "seg_id": 243,
+                "range": [
+                    243,
+                    244
+                ],
+                "layers": [
+                    "layer3.18.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.18.relu"
+            },
+            {
+                "seg_id": 244,
+                "range": [
+                    244,
+                    245
+                ],
+                "layers": [
+                    "layer3.19.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.19.conv1"
+            },
+            {
+                "seg_id": 245,
+                "range": [
+                    245,
+                    246
+                ],
+                "layers": [
+                    "layer3.19.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.19.bn1"
+            },
+            {
+                "seg_id": 246,
+                "range": [
+                    246,
+                    247
+                ],
+                "layers": [
+                    "layer3.19.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.19.relu"
+            },
+            {
+                "seg_id": 247,
+                "range": [
+                    247,
+                    248
+                ],
+                "layers": [
+                    "layer3.19.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.19.conv2"
+            },
+            {
+                "seg_id": 248,
+                "range": [
+                    248,
+                    249
+                ],
+                "layers": [
+                    "layer3.19.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.19.bn2"
+            },
+            {
+                "seg_id": 249,
+                "range": [
+                    249,
+                    250
+                ],
+                "layers": [
+                    "layer3.19.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.19.relu"
+            },
+            {
+                "seg_id": 250,
+                "range": [
+                    250,
+                    251
+                ],
+                "layers": [
+                    "layer3.19.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.19.conv3"
+            },
+            {
+                "seg_id": 251,
+                "range": [
+                    251,
+                    252
+                ],
+                "layers": [
+                    "layer3.19.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.19.bn3"
+            },
+            {
+                "seg_id": 252,
+                "range": [
+                    252,
+                    253
+                ],
+                "layers": [
+                    "layer3.19.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.19.relu"
+            },
+            {
+                "seg_id": 253,
+                "range": [
+                    253,
+                    254
+                ],
+                "layers": [
+                    "layer3.20.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.20.conv1"
+            },
+            {
+                "seg_id": 254,
+                "range": [
+                    254,
+                    255
+                ],
+                "layers": [
+                    "layer3.20.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.20.bn1"
+            },
+            {
+                "seg_id": 255,
+                "range": [
+                    255,
+                    256
+                ],
+                "layers": [
+                    "layer3.20.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.20.relu"
+            },
+            {
+                "seg_id": 256,
+                "range": [
+                    256,
+                    257
+                ],
+                "layers": [
+                    "layer3.20.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.20.conv2"
+            },
+            {
+                "seg_id": 257,
+                "range": [
+                    257,
+                    258
+                ],
+                "layers": [
+                    "layer3.20.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.20.bn2"
+            },
+            {
+                "seg_id": 258,
+                "range": [
+                    258,
+                    259
+                ],
+                "layers": [
+                    "layer3.20.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.20.relu"
+            },
+            {
+                "seg_id": 259,
+                "range": [
+                    259,
+                    260
+                ],
+                "layers": [
+                    "layer3.20.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.20.conv3"
+            },
+            {
+                "seg_id": 260,
+                "range": [
+                    260,
+                    261
+                ],
+                "layers": [
+                    "layer3.20.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.20.bn3"
+            },
+            {
+                "seg_id": 261,
+                "range": [
+                    261,
+                    262
+                ],
+                "layers": [
+                    "layer3.20.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.20.relu"
+            },
+            {
+                "seg_id": 262,
+                "range": [
+                    262,
+                    263
+                ],
+                "layers": [
+                    "layer3.21.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.21.conv1"
+            },
+            {
+                "seg_id": 263,
+                "range": [
+                    263,
+                    264
+                ],
+                "layers": [
+                    "layer3.21.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.21.bn1"
+            },
+            {
+                "seg_id": 264,
+                "range": [
+                    264,
+                    265
+                ],
+                "layers": [
+                    "layer3.21.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.21.relu"
+            },
+            {
+                "seg_id": 265,
+                "range": [
+                    265,
+                    266
+                ],
+                "layers": [
+                    "layer3.21.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.21.conv2"
+            },
+            {
+                "seg_id": 266,
+                "range": [
+                    266,
+                    267
+                ],
+                "layers": [
+                    "layer3.21.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.21.bn2"
+            },
+            {
+                "seg_id": 267,
+                "range": [
+                    267,
+                    268
+                ],
+                "layers": [
+                    "layer3.21.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.21.relu"
+            },
+            {
+                "seg_id": 268,
+                "range": [
+                    268,
+                    269
+                ],
+                "layers": [
+                    "layer3.21.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.21.conv3"
+            },
+            {
+                "seg_id": 269,
+                "range": [
+                    269,
+                    270
+                ],
+                "layers": [
+                    "layer3.21.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.21.bn3"
+            },
+            {
+                "seg_id": 270,
+                "range": [
+                    270,
+                    271
+                ],
+                "layers": [
+                    "layer3.21.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.21.relu"
+            },
+            {
+                "seg_id": 271,
+                "range": [
+                    271,
+                    272
+                ],
+                "layers": [
+                    "layer3.22.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.22.conv1"
+            },
+            {
+                "seg_id": 272,
+                "range": [
+                    272,
+                    273
+                ],
+                "layers": [
+                    "layer3.22.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.22.bn1"
+            },
+            {
+                "seg_id": 273,
+                "range": [
+                    273,
+                    274
+                ],
+                "layers": [
+                    "layer3.22.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.22.relu"
+            },
+            {
+                "seg_id": 274,
+                "range": [
+                    274,
+                    275
+                ],
+                "layers": [
+                    "layer3.22.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.22.conv2"
+            },
+            {
+                "seg_id": 275,
+                "range": [
+                    275,
+                    276
+                ],
+                "layers": [
+                    "layer3.22.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.22.bn2"
+            },
+            {
+                "seg_id": 276,
+                "range": [
+                    276,
+                    277
+                ],
+                "layers": [
+                    "layer3.22.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.22.relu"
+            },
+            {
+                "seg_id": 277,
+                "range": [
+                    277,
+                    278
+                ],
+                "layers": [
+                    "layer3.22.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer3.22.conv3"
+            },
+            {
+                "seg_id": 278,
+                "range": [
+                    278,
+                    279
+                ],
+                "layers": [
+                    "layer3.22.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer3.22.bn3"
+            },
+            {
+                "seg_id": 279,
+                "range": [
+                    279,
+                    280
+                ],
+                "layers": [
+                    "layer3.22.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer3.22.relu"
+            },
+            {
+                "seg_id": 280,
+                "range": [
+                    280,
+                    281
+                ],
+                "layers": [
+                    "layer4.0.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer4.0.conv1"
+            },
+            {
+                "seg_id": 281,
+                "range": [
+                    281,
+                    282
+                ],
+                "layers": [
+                    "layer4.0.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer4.0.bn1"
+            },
+            {
+                "seg_id": 282,
+                "range": [
+                    282,
+                    283
+                ],
+                "layers": [
+                    "layer4.0.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer4.0.relu"
+            },
+            {
+                "seg_id": 283,
+                "range": [
+                    283,
+                    284
+                ],
+                "layers": [
+                    "layer4.0.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer4.0.conv2"
+            },
+            {
+                "seg_id": 284,
+                "range": [
+                    284,
+                    285
+                ],
+                "layers": [
+                    "layer4.0.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer4.0.bn2"
+            },
+            {
+                "seg_id": 285,
+                "range": [
+                    285,
+                    286
+                ],
+                "layers": [
+                    "layer4.0.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer4.0.relu"
+            },
+            {
+                "seg_id": 286,
+                "range": [
+                    286,
+                    287
+                ],
+                "layers": [
+                    "layer4.0.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer4.0.conv3"
+            },
+            {
+                "seg_id": 287,
+                "range": [
+                    287,
+                    288
+                ],
+                "layers": [
+                    "layer4.0.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer4.0.bn3"
+            },
+            {
+                "seg_id": 288,
+                "range": [
+                    288,
+                    289
+                ],
+                "layers": [
+                    "layer4.0.downsample.0"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer4.0.downsample.0"
+            },
+            {
+                "seg_id": 289,
+                "range": [
+                    289,
+                    290
+                ],
+                "layers": [
+                    "layer4.0.downsample.1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer4.0.downsample.1"
+            },
+            {
+                "seg_id": 290,
+                "range": [
+                    290,
+                    291
+                ],
+                "layers": [
+                    "layer4.0.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer4.0.relu"
+            },
+            {
+                "seg_id": 291,
+                "range": [
+                    291,
+                    292
+                ],
+                "layers": [
+                    "layer4.1.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer4.1.conv1"
+            },
+            {
+                "seg_id": 292,
+                "range": [
+                    292,
+                    293
+                ],
+                "layers": [
+                    "layer4.1.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer4.1.bn1"
+            },
+            {
+                "seg_id": 293,
+                "range": [
+                    293,
+                    294
+                ],
+                "layers": [
+                    "layer4.1.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer4.1.relu"
+            },
+            {
+                "seg_id": 294,
+                "range": [
+                    294,
+                    295
+                ],
+                "layers": [
+                    "layer4.1.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer4.1.conv2"
+            },
+            {
+                "seg_id": 295,
+                "range": [
+                    295,
+                    296
+                ],
+                "layers": [
+                    "layer4.1.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer4.1.bn2"
+            },
+            {
+                "seg_id": 296,
+                "range": [
+                    296,
+                    297
+                ],
+                "layers": [
+                    "layer4.1.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer4.1.relu"
+            },
+            {
+                "seg_id": 297,
+                "range": [
+                    297,
+                    298
+                ],
+                "layers": [
+                    "layer4.1.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer4.1.conv3"
+            },
+            {
+                "seg_id": 298,
+                "range": [
+                    298,
+                    299
+                ],
+                "layers": [
+                    "layer4.1.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer4.1.bn3"
+            },
+            {
+                "seg_id": 299,
+                "range": [
+                    299,
+                    300
+                ],
+                "layers": [
+                    "layer4.1.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer4.1.relu"
+            },
+            {
+                "seg_id": 300,
+                "range": [
+                    300,
+                    301
+                ],
+                "layers": [
+                    "layer4.2.conv1"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer4.2.conv1"
+            },
+            {
+                "seg_id": 301,
+                "range": [
+                    301,
+                    302
+                ],
+                "layers": [
+                    "layer4.2.bn1"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer4.2.bn1"
+            },
+            {
+                "seg_id": 302,
+                "range": [
+                    302,
+                    303
+                ],
+                "layers": [
+                    "layer4.2.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer4.2.relu"
+            },
+            {
+                "seg_id": 303,
+                "range": [
+                    303,
+                    304
+                ],
+                "layers": [
+                    "layer4.2.conv2"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer4.2.conv2"
+            },
+            {
+                "seg_id": 304,
+                "range": [
+                    304,
+                    305
+                ],
+                "layers": [
+                    "layer4.2.bn2"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer4.2.bn2"
+            },
+            {
+                "seg_id": 305,
+                "range": [
+                    305,
+                    306
+                ],
+                "layers": [
+                    "layer4.2.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer4.2.relu"
+            },
+            {
+                "seg_id": 306,
+                "range": [
+                    306,
+                    307
+                ],
+                "layers": [
+                    "layer4.2.conv3"
+                ],
+                "layer_types": [
+                    "Conv2d"
+                ],
+                "out_layer": "layer4.2.conv3"
+            },
+            {
+                "seg_id": 307,
+                "range": [
+                    307,
+                    308
+                ],
+                "layers": [
+                    "layer4.2.bn3"
+                ],
+                "layer_types": [
+                    "BatchNorm2d"
+                ],
+                "out_layer": "layer4.2.bn3"
+            },
+            {
+                "seg_id": 308,
+                "range": [
+                    308,
+                    309
+                ],
+                "layers": [
+                    "layer4.2.relu"
+                ],
+                "layer_types": [
+                    "ReLU"
+                ],
+                "out_layer": "layer4.2.relu"
+            },
+            {
+                "seg_id": 309,
+                "range": [
+                    309,
+                    310
+                ],
+                "layers": [
+                    "avgpool"
+                ],
+                "layer_types": [
+                    "AdaptiveAvgPool2d"
+                ],
+                "out_layer": "avgpool"
+            },
+            {
+                "seg_id": 310,
+                "range": [
+                    310,
+                    311
+                ],
+                "layers": [
+                    "fc"
+                ],
+                "layer_types": [
+                    "Linear"
+                ],
+                "out_layer": "fc"
+            }
+        ]
+    },
+    "configs": {
+        "device_0": {
+            "device_id": 0,
+            "device_flops": 6733652737.093856,
+            "network_bandwidth_mbps": 95.57422708114063,
+            "model": "synergistic",
+            "decision": {
+                "split_point": 162,
+                "resource_ratio": 0.4227358229947752,
+                "client_execute_range": [
+                    0,
+                    162
+                ],
+                "server_execute_range": [
+                    162,
+                    311
+                ]
+            }
+        },
+        "device_1": {
+            "device_id": 1,
+            "device_flops": 6733652737.093856,
+            "network_bandwidth_mbps": 87.43930460009457,
+            "model": "synergistic",
+            "decision": {
+                "split_point": 5,
+                "resource_ratio": 0.5772641770042247,
+                "client_execute_range": [
+                    0,
+                    5
+                ],
+                "server_execute_range": [
+                    5,
+                    311
+                ]
+            }
+        }
+    }
+}

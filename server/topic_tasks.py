@@ -6,6 +6,8 @@ from __future__ import annotations
 import json
 import os
 import queue
+import select
+import shutil
 import shlex
 import subprocess
 import tempfile
@@ -32,21 +34,25 @@ def _get_load_workbook():
     except ImportError as exc:
         raise RuntimeError("openpyxl is required to parse benchmark results") from exc
 
-FEITENG_SCRIPT = "/home/a/709Docker/kubernetes_py_ctl_2/run.sh"
-FEITENG_WORKDIR = "/home/a/709Docker/kubernetes_py_ctl_2"
-ASCEND_HOST = "root@192.168.31.179"
-ASCEND_SCRIPT = "/root/709Docker/kubernetes_py_ctl_2/run.sh"
-ASCEND_WORKDIR = "/root/709Docker/kubernetes_py_ctl_2"
+FEITENG_SCRIPT = os.environ.get("TOPIC1_FEITENG_SCRIPT", "/home/a/709Docker/kubernetes_py_ctl_2/run.sh")
+FEITENG_WORKDIR = os.environ.get("TOPIC1_FEITENG_WORKDIR", "/home/a/709Docker/kubernetes_py_ctl_2")
+ASCEND_HOST = os.environ.get("TOPIC1_ASCEND_HOST", "root@192.168.31.179")
+ASCEND_SCRIPT = os.environ.get("TOPIC1_ASCEND_SCRIPT", "/root/709Docker/kubernetes_py_ctl_2/run.sh")
+ASCEND_WORKDIR = os.environ.get("TOPIC1_ASCEND_WORKDIR", "/root/709Docker/kubernetes_py_ctl_2")
 ASCEND_SSH_PASSWORD = os.environ.get("ASCEND_SSH_PASSWORD", "Mind@123")
 PROJECT2_RELEASE_DIR = "/home/a/709Docker/PyTaskPredict-release"
 PROJECT2_SCRIPT = f"{PROJECT2_RELEASE_DIR}/run_project2.sh"
 PROJECT2_RESULTS_DIR = f"{PROJECT2_RELEASE_DIR}/results"
 PROJECT3_WORKDIR = os.environ.get("PROJECT3_WORKDIR", "/home/a/709Docker/kt3_resource")
 PROJECT3_ASCEND_SERVER_HOST = os.environ.get("PROJECT3_ASCEND_SERVER_HOST", "root@192.168.31.154")
-PROJECT3_ASCEND_CLIENT_HOST = os.environ.get("PROJECT3_ASCEND_CLIENT_HOST", "root@192.168.31.247")
 PROJECT3_ASCEND_SERVER_IP = os.environ.get("PROJECT3_ASCEND_SERVER_IP", "192.168.31.154")
-PROJECT3_ASCEND_CLIENT_IP = os.environ.get("PROJECT3_ASCEND_CLIENT_IP", "192.168.31.247")
-PROJECT3_FEITENG_CLIENT_IP = os.environ.get("PROJECT3_FEITENG_CLIENT_IP", "当前机器")
+PROJECT3_LOCAL_FEITENG_CLIENT_IP = os.environ.get("PROJECT3_LOCAL_FEITENG_CLIENT_IP", "192.168.31.36")
+PROJECT3_REMOTE_FEITENG_CLIENT_HOST = os.environ.get("PROJECT3_REMOTE_FEITENG_CLIENT_HOST", "a@192.168.31.128")
+PROJECT3_REMOTE_FEITENG_CLIENT_IP = os.environ.get("PROJECT3_REMOTE_FEITENG_CLIENT_IP", "192.168.31.128")
+PROJECT3_ASCEND_CLIENT1_HOST = os.environ.get("PROJECT3_ASCEND_CLIENT1_HOST", "root@192.168.31.179")
+PROJECT3_ASCEND_CLIENT1_IP = os.environ.get("PROJECT3_ASCEND_CLIENT1_IP", "192.168.31.179")
+PROJECT3_ASCEND_CLIENT2_HOST = os.environ.get("PROJECT3_ASCEND_CLIENT2_HOST", "root@192.168.31.247")
+PROJECT3_ASCEND_CLIENT2_IP = os.environ.get("PROJECT3_ASCEND_CLIENT2_IP", "192.168.31.247")
 PROJECT3_SSH_PASSWORD = os.environ.get("PROJECT3_SSH_PASSWORD", ASCEND_SSH_PASSWORD)
 PROJECT3_FEITENG_SSH_PASSWORD = os.environ.get("PROJECT3_FEITENG_SSH_PASSWORD", "Sancog123")
 PROJECT3_SERVER_SCRIPT = "server_cpu_extreme_compute_torch_shared.py"
@@ -64,6 +70,35 @@ PROJECT3_EXCLUDE_FIRST = int(os.environ.get("PROJECT3_EXCLUDE_FIRST", "5"))
 PROJECT3_DEFAULT_TASKS = int(os.environ.get("PROJECT3_DEFAULT_TASKS", "215"))
 PROJECT3_RUNTIME_DIR = os.environ.get("PROJECT3_RUNTIME_DIR", f"{PROJECT3_WORKDIR}/runtime_split_cache")
 PROJECT3_PSS_INTERVAL = int(os.environ.get("PROJECT3_PSS_INTERVAL", "1"))
+PROJECT3_SCENARIO = "ascend_feiteng_feiteng"
+PROJECT3_SCENARIO_ASCEND_ASCEND = "ascend_ascend_ascend"
+PROJECT3_SCENARIOS = {PROJECT3_SCENARIO, PROJECT3_SCENARIO_ASCEND_ASCEND}
+PROJECT3_BASELINE_METRICS = {
+    "deit_tiny_patch16_224": {"latencyMs": 364.1976552, "memoryMb": 159},
+    "levit_128": {"latencyMs": 655.9859076, "memoryMb": 175.5},
+    "mobilenet_v2": {"latencyMs": 379.21, "memoryMb": 134.4},
+    "mobilenet_v3_large": {"latencyMs": 294.92, "memoryMb": 144.3},
+    "resnet101": {"latencyMs": 6340.610399, "memoryMb": 312.7},
+    "resnet18": {"latencyMs": 932.6931026, "memoryMb": 166.8},
+    "resnet50": {"latencyMs": 3203.690892, "memoryMb": 238.1},
+    "mobilevgg": {"latencyMs": 2488.29769, "memoryMb": 217.8},
+    "lightvgg11": {"latencyMs": 2329.589507, "memoryMb": 1154.048},
+    "yolov5": {"latencyMs": 1449.505676, "memoryMb": 164.8},
+    "yolov8": {"latencyMs": 572.5167201, "memoryMb": 136.3},
+}
+PROJECT3_ASCEND_ASCEND_BASELINE_METRICS = {
+    "deit_tiny_patch16_224": {"latencyMs": 587.9247212, "memoryMb": 279.8},
+    "levit_128": {"latencyMs": 267.5110607, "memoryMb": 359.7},
+    "mobilenet_v2": {"latencyMs": 243.629967, "memoryMb": 248.3},
+    "mobilenet_v3_large": {"latencyMs": 231.1712689, "memoryMb": 286.1},
+    "resnet101": {"latencyMs": 2329.237232, "memoryMb": 1061.88},
+    "resnet18": {"latencyMs": 511.0485725, "memoryMb": 166.8},
+    "resnet50": {"latencyMs": 1220.934453, "memoryMb": 1110.016},
+    "mobilevgg": {"latencyMs": 1462.17578, "memoryMb": 248.7},
+    "lightvgg11": {"latencyMs": 1097.120133, "memoryMb": 2048},
+    "yolov5": {"latencyMs": 624.2213025, "memoryMb": 358.4},
+    "yolov8": {"latencyMs": 306.4463143, "memoryMb": 244.6},
+}
 PROJECT3_MODEL_ALIASES = {
     "deit_tiny_patch_16_224": "deit_tiny_patch16_224",
     "yolo5s": "yolov5",
@@ -76,25 +111,8 @@ PROJECT3_MODEL_ALIASES = {
 }
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 PROJECT3_REGISTRY_PATH = Path(os.environ.get("PROJECT3_REGISTRY", str(PROJECT_ROOT / "model_registry_1v1.json")))
-PROJECT3_MEMORY_CSV = {
-    "ascend_ascend": PROJECT_ROOT / "public" / "data" / "topic3" / "图1.2：昇腾1：1内存图.csv",
-    "ascend_feiteng": PROJECT_ROOT / "public" / "data" / "topic3" / "图2.2：飞腾1：1内存图.csv",
-    "ascend_mixed": PROJECT_ROOT / "public" / "data" / "topic3" / "图2.2：飞腾1：1内存图.csv",
-}
-PROJECT3_1V2_BASELINE_PATH = Path(os.environ.get("PROJECT3_1V2_BASELINE", str(PROJECT_ROOT / "1v2.xlsx")))
-PROJECT3_MEMORY_MODEL_ALIASES = {
-    "deit_tiny_patch16_224": "deit_tiny_patch_16_224",
-    "yolov5": "yolov5s",
-    "yolov8": "yolov8n",
-    "vgg11": "vgg11_static",
-}
-PROJECT3_COMPARISON_MODEL_ALIASES = {
-    "deit_tiny_patch16_224": "deit_tiny_patch_16_224",
-    "deit_tiny_patch_16_224": "deit_tiny_patch_16_224",
-    "lightvgg11": "lightvgg11",
-    "yolov5": "yolov5s",
-    "yolov8": "yolov8n",
-}
+PROJECT3_CUT_JSON_FF_SOURCE_DIR = Path(os.environ.get("PROJECT3_CUT_JSON_FF_SOURCE_DIR", str(PROJECT_ROOT / "cut_json_ff")))
+PROJECT3_CUT_JSON_SS_SOURCE_DIR = Path(os.environ.get("PROJECT3_CUT_JSON_SS_SOURCE_DIR", str(PROJECT_ROOT / "cut_json_ss")))
 PROJECT4_FEITENG_WORKDIR = os.environ.get("PROJECT4_FEITENG_WORKDIR", "/home/a/7094")
 PROJECT4_FEITENG_PYTHON = os.environ.get("PROJECT4_FEITENG_PYTHON", f"{PROJECT4_FEITENG_WORKDIR}/.venv/bin/python")
 PROJECT4_ASCEND_HOST = os.environ.get("PROJECT4_ASCEND_HOST", "root@192.168.31.179")
@@ -538,6 +556,11 @@ PROJECT3_REGISTRY_MODEL_ALIASES = {
     "yolov5": "yolo5",
     "yolov8": "yolo8",
 }
+PROJECT3_SERVER_ARCH_ALIASES = {
+    "lightvgg11": "lightvgg",
+    "yolo8": "yolov8",
+    "yolov8n": "yolov8",
+}
 SSH_BASE_OPTS = [
     "-o",
     "StrictHostKeyChecking=no",
@@ -552,6 +575,8 @@ SSH_BASE_OPTS = [
 ]
 
 TASK_RETENTION_SEC = 3600
+TOPIC1_ASCEND_IDLE_TIMEOUT_SEC = int(os.environ.get("TOPIC1_ASCEND_IDLE_TIMEOUT_SEC", "900"))
+TOPIC1_ASCEND_TOTAL_TIMEOUT_SEC = int(os.environ.get("TOPIC1_ASCEND_TOTAL_TIMEOUT_SEC", "7200"))
 _tasks: dict[str, dict[str, Any]] = {}
 _lock = threading.RLock()
 
@@ -654,6 +679,22 @@ def _build_run_command(platform: str, rounds: int, models: list[str]) -> tuple[l
     raise ValueError(f"Unsupported platform: {platform}")
 
 
+def _validate_topic1_ascend_runtime() -> None:
+    check_cmd = (
+        f"test -f {shlex.quote(ASCEND_SCRIPT)} && "
+        f"! grep -q 'phytium-infer' {shlex.quote(ASCEND_SCRIPT)}"
+    )
+    completed = subprocess.run(_build_ssh_command(check_cmd), capture_output=True, text=True, timeout=30)
+    if completed.returncode == 0:
+        return
+    output = (completed.stderr or completed.stdout or "").strip()
+    raise RuntimeError(
+        "课题一昇腾启动脚本校验失败：当前远端脚本不存在，或仍引用飞腾镜像 phytium-infer。"
+        f"请在 {ASCEND_HOST}:{ASCEND_SCRIPT} 配置昇腾专用脚本，或通过 TOPIC1_ASCEND_SCRIPT/TOPIC1_ASCEND_WORKDIR 指向正确目录。"
+        + (f" 远端输出: {output}" if output else "")
+    )
+
+
 def _build_project2_run_command(board: str, dataset_group: str, load_level: str) -> tuple[list[str], Path, str | None]:
     output_name = f"{board}_{dataset_group}_{load_level}.csv"
     cmd = [
@@ -738,6 +779,43 @@ def _append_log(task: dict[str, Any], message: str, log_type: str = "stdout") ->
             pass
 
 
+def _terminate_process(process: subprocess.Popen, wait_seconds: int = 10) -> None:
+    if process.poll() is not None:
+        return
+    process.terminate()
+    try:
+        process.wait(timeout=wait_seconds)
+    except subprocess.TimeoutExpired:
+        process.kill()
+        process.wait()
+
+
+def _topic1_timeout_message(payload: dict[str, Any], idle_seconds: int, total_seconds: int) -> str | None:
+    if payload.get("topicId", 1) != 1 or payload.get("platform") != "ascend":
+        return None
+    if idle_seconds >= TOPIC1_ASCEND_IDLE_TIMEOUT_SEC:
+        return (
+            f"课题一昇腾执行已 {idle_seconds}s 无新日志，已自动终止。"
+            "当前通常卡在远端 Docker 镜像加载/导入阶段，请在 192.168.31.179 检查 Docker 状态、磁盘空间和镜像包完整性。"
+        )
+    if total_seconds >= TOPIC1_ASCEND_TOTAL_TIMEOUT_SEC:
+        return f"课题一昇腾执行超过总超时 {TOPIC1_ASCEND_TOTAL_TIMEOUT_SEC}s，已自动终止。"
+    return None
+
+
+def _topic1_failure_message(payload: dict[str, Any], output_lines: list[str], return_code: int) -> str:
+    if payload.get("topicId", 1) == 1 and payload.get("platform") == "ascend":
+        output_text = "\n".join(output_lines[-80:])
+        if "ErrImagePull" in output_text or "ImagePullBackOff" in output_text:
+            if "registry-1.docker.io" in output_text or "Docker Hub" in output_text or "Client.Timeout" in output_text:
+                return (
+                    "课题一昇腾 Pod 镜像拉取失败：远端节点访问 Docker Hub 超时。"
+                    "请在 192.168.31.179/集群节点预拉取相关镜像，或配置可访问的镜像仓库/加速器后重试。"
+                )
+            return "课题一昇腾 Pod 镜像拉取失败，请检查远端镜像名称、仓库权限和节点镜像缓存。"
+    return f"脚本退出码 {return_code}"
+
+
 def _parse_summary_xlsx(xlsx_path: Path) -> list[dict[str, Any]]:
     load_workbook = _get_load_workbook()
 
@@ -795,31 +873,35 @@ def _project3_pth_path(model: str) -> str:
 
 
 def _project3_cut_json_path(model: str, scenario: str) -> str:
-    if scenario == "ascend_feiteng":
-        path = Path(PROJECT3_WORKDIR) / "cut_json_fvs" / f"cut_f_s_{model}.json"
-        if model == "lightvgg11" and not path.exists():
-            path = Path(PROJECT3_WORKDIR) / "cut_json_fvs" / "cut_f_s_lightvg11.json"
-        return str(path)
-    if scenario == "ascend_mixed":
-        return f"{PROJECT3_WORKDIR}/cut_json_2v1_fsVs/cut_double_s_{model}.json"
-    return f"{PROJECT3_WORKDIR}/cut_json_svs/cut_{model}.json"
-
-
-def _project3_client_profile(scenario: str) -> str:
-    if scenario == "ascend_feiteng":
-        return "ft"
-    if scenario == "ascend_mixed":
-        return "mixed"
-    return "ascend"
+    cut_model = PROJECT3_REGISTRY_MODEL_ALIASES.get(model, model)
+    if scenario == PROJECT3_SCENARIO_ASCEND_ASCEND:
+        dirname = "cut_json_ss"
+        prefix = "cut_ss"
+    else:
+        dirname = "cut_json_ff"
+        prefix = "cut_ff"
+    path = Path(PROJECT3_WORKDIR) / dirname / f"{prefix}_{cut_model}.json"
+    if model == "lightvgg11" and not path.exists():
+        path = Path(PROJECT3_WORKDIR) / dirname / f"{prefix}_lightvg11.json"
+    return str(path)
 
 
 def _project3_scenario_label(scenario: str) -> str:
     labels = {
-        "ascend_ascend": "昇腾 server / 昇腾 client",
-        "ascend_feiteng": "昇腾 server / 飞腾 client",
-        "ascend_mixed": "昇腾 server / 飞腾 client + 昇腾 client",
+        PROJECT3_SCENARIO: "昇腾 server / 飞腾 client x2",
+        PROJECT3_SCENARIO_ASCEND_ASCEND: "昇腾 server / 昇腾 client x2",
     }
     return labels.get(scenario, scenario)
+
+
+def _project3_scenario_cut_dir(scenario: str) -> str:
+    return "cut_json_ss" if scenario == PROJECT3_SCENARIO_ASCEND_ASCEND else "cut_json_ff"
+
+
+def _project3_cut_source_dir(dirname: str) -> Path:
+    if dirname == "cut_json_ss":
+        return PROJECT3_CUT_JSON_SS_SOURCE_DIR
+    return PROJECT3_CUT_JSON_FF_SOURCE_DIR
 
 
 def _load_project3_registry() -> dict[str, Any]:
@@ -834,70 +916,57 @@ def _project3_registry_key(model: str) -> str:
     return PROJECT3_REGISTRY_MODEL_ALIASES.get(model, model)
 
 
+def _project3_server_arch(arch: str) -> str:
+    normalized = (arch or "").strip()
+    return PROJECT3_SERVER_ARCH_ALIASES.get(normalized, normalized)
+
+
 def _project3_model_config(model: str, scenario: str) -> dict[str, Any]:
     registry = _load_project3_registry()
     registry_key = _project3_registry_key(model)
     item = registry.get(registry_key) if registry else None
-    client_profile = _project3_client_profile(scenario)
-    if scenario in ("ascend_feiteng", "ascend_ascend", "ascend_mixed") and isinstance(item, dict):
+    if isinstance(item, dict):
         if item.get("enabled") is False:
             reason = item.get("disabled_reason") or "disabled in registry"
             raise RuntimeError(f"model {registry_key} is disabled: {reason}")
-        clients = item.get("clients") or {}
-        profile = clients.get(client_profile) or {}
-        if isinstance(profile, dict):
-            pth = item.get("pth") or _project3_pth_path(model)
-            cut_json = profile.get("cut_json") or _project3_cut_json_path(model, scenario)
-            arch = item.get("arch") or model
-            device_keys = profile.get("device_keys") or [profile.get("device_key") or "device_0"]
-            device_keys = [str(key) for key in device_keys if key]
-            device_key = device_keys[0] if device_keys else "device_0"
-            client_specs = profile.get("clients") or [{"type": client_profile, "device_key": device_key}]
-            if not Path(str(pth)).exists():
-                raise RuntimeError(f"pth file not found for {registry_key}: {pth}")
-            if not Path(str(cut_json)).exists():
-                raise RuntimeError(f"cut_json not found for {registry_key}/{client_profile}: {cut_json}")
-            # Do not use registry num_classes blindly: current baseline files are ImageNet-1000
-            # for several models while the 1v1 registry may contain 100-class experiment values.
-            return {
-                "registryKey": registry_key,
-                "pth": str(pth),
-                "cutJson": str(cut_json),
-                "arch": str(arch),
-                "numClasses": None,
-                "deviceKey": str(device_key),
-                "deviceKeys": device_keys or [str(device_key)],
-                "clients": client_specs,
-                "runtimeDir": PROJECT3_RUNTIME_DIR,
-            }
+        pth = item.get("pth") or _project3_pth_path(model)
+        arch = _project3_server_arch(str(item.get("arch") or model))
+    else:
+        pth = _project3_pth_path(model)
+        arch = _project3_server_arch(model)
+    cut_json = _project3_cut_json_path(model, scenario)
+    device_keys = ["device_0", "device_1"]
+    if not Path(str(pth)).exists():
+        raise RuntimeError(f"pth file not found for {registry_key}: {pth}")
+    if not Path(str(cut_json)).exists():
+        profile = "ss" if scenario == PROJECT3_SCENARIO_ASCEND_ASCEND else "ff"
+        raise RuntimeError(f"cut_json not found for {registry_key}/{profile}: {cut_json}")
+    if scenario == PROJECT3_SCENARIO_ASCEND_ASCEND:
+        clients = [
+            {"type": "ascend-remote", "device_key": "device_0", "ip": PROJECT3_ASCEND_CLIENT1_IP, "host": PROJECT3_ASCEND_CLIENT1_HOST},
+            {"type": "ascend-remote", "device_key": "device_1", "ip": PROJECT3_ASCEND_CLIENT2_IP, "host": PROJECT3_ASCEND_CLIENT2_HOST},
+        ]
+    else:
+        clients = [
+            {"type": "ft-local", "device_key": "device_0", "ip": PROJECT3_LOCAL_FEITENG_CLIENT_IP},
+            {"type": "ft-remote", "device_key": "device_1", "ip": PROJECT3_REMOTE_FEITENG_CLIENT_IP, "host": PROJECT3_REMOTE_FEITENG_CLIENT_HOST},
+        ]
     return {
         "registryKey": registry_key,
-        "pth": _project3_pth_path(model),
-        "cutJson": _project3_cut_json_path(model, scenario),
-        "arch": model,
+        "pth": str(pth),
+        "cutJson": str(cut_json),
+        "arch": str(arch),
         "numClasses": None,
         "deviceKey": "device_0",
-        "deviceKeys": ["device_0"],
-        "clients": [{"type": client_profile, "device_key": "device_0"}],
+        "deviceKeys": device_keys,
+        "clients": clients,
         "runtimeDir": PROJECT3_RUNTIME_DIR,
     }
 
 
 def _project3_baseline_path(model: str, scenario: str) -> Path:
-    baseline_dir = "baseline_f" if scenario == "ascend_feiteng" else "baseline_s"
-    candidates = [
-        Path(PROJECT3_WORKDIR) / baseline_dir / f"baseline_{model}_1cpu_2g_onnx.json",
-    ]
-    if model == "yolov5":
-        candidates.append(Path(PROJECT3_WORKDIR) / baseline_dir / "baseline_yolo5_1cpu_2g_onnx.json")
-    if model == "yolov8":
-        candidates.append(Path(PROJECT3_WORKDIR) / baseline_dir / "baseline_yolo8_1cpu_2g_onnx.json")
-    if model == "mobilevgg":
-        candidates.append(Path(PROJECT3_WORKDIR) / baseline_dir / "baseline_mobilevgg_fp32_1cpu_2g_onnx.json")
-    for path in candidates:
-        if path.exists():
-            return path
-    return candidates[0]
+    del scenario
+    return Path(PROJECT3_WORKDIR) / "baseline_ff_reserved" / f"baseline_{model}.json"
 
 
 def _json_get_path(data: Any, path: list[Any]) -> Any:
@@ -915,75 +984,21 @@ def _json_get_path(data: Any, path: list[Any]) -> Any:
 
 
 def _parse_project3_baseline(model: str, scenario: str) -> dict[str, Any]:
-    if scenario == "ascend_mixed":
-        ascend_baseline = _parse_project3_baseline(model, "ascend_ascend")
-        feiteng_baseline = _parse_project3_baseline(model, "ascend_feiteng")
-
-        def _avg(left, right):
-            try:
-                values = [float(item) for item in (left, right) if item is not None]
-            except (TypeError, ValueError):
-                return None
-            return _format_number(sum(values) / len(values)) if values else None
-
-        return {
-            "latencyMs": _avg(ascend_baseline.get("latencyMs"), feiteng_baseline.get("latencyMs")),
-            "memoryMb": _avg(ascend_baseline.get("memoryMb"), feiteng_baseline.get("memoryMb")),
-            "source": f"{ascend_baseline.get('source')} + {feiteng_baseline.get('source')}",
-        }
-
-    path = _project3_baseline_path(model, scenario)
-    if not path.exists():
-        return {"latencyMs": None, "memoryMb": None, "source": str(path)}
-    with path.open("r", encoding="utf-8") as file_obj:
-        data = json.load(file_obj)
-    latency = _json_get_path(data, ["results", 0, "avg_ms_median"])
-    if latency is None:
-        latency = _json_get_path(data, ["results", 0, "benchmark", "avg_ms_summary", "median"])
-    memory = _json_get_path(data, ["results", 0, "benchmark", "mem", "mean"])
+    metrics_map = PROJECT3_ASCEND_ASCEND_BASELINE_METRICS if scenario == PROJECT3_SCENARIO_ASCEND_ASCEND else PROJECT3_BASELINE_METRICS
+    metrics = metrics_map.get(model) or {}
+    source = "内置双昇腾全本地 baseline 表" if scenario == PROJECT3_SCENARIO_ASCEND_ASCEND else "内置双飞腾全本地 baseline 表"
     return {
-        "latencyMs": _format_number(latency),
-        "memoryMb": _format_number(memory),
-        "source": str(path),
+        "latencyMs": _format_number(metrics.get("latencyMs")),
+        "memoryMb": _format_number(metrics.get("memoryMb")),
+        "source": source,
     }
 
 
-def _project3_memory_model_name(model: str) -> str:
-    return PROJECT3_MEMORY_MODEL_ALIASES.get(model, model)
-
-
 def _parse_project3_memory_metrics(model: str, scenario: str) -> dict[str, Any]:
-    csv_path = PROJECT3_MEMORY_CSV.get(scenario)
-    if not csv_path or not csv_path.exists():
-        return {"baselineMemoryMb": None, "methodMemoryMb": None, "source": str(csv_path) if csv_path else ""}
-
-    target_model = _project3_memory_model_name(model)
-    with csv_path.open("r", encoding="utf-8-sig", newline="") as file_obj:
-        reader = csv.reader(file_obj)
-        rows = list(reader)
-
-    if len(rows) < 5:
-        return {"baselineMemoryMb": None, "methodMemoryMb": None, "source": str(csv_path)}
-
-    header = [item.strip() for item in rows[3]]
-    full_idx = header.index("完整模型内存占用") if "完整模型内存占用" in header else 1
-    head_idx = header.index("head模型内存占用") if "head模型内存占用" in header else 2
-    for row in rows[4:]:
-        if not row:
-            continue
-        if row[0].strip() != target_model:
-            continue
-        return {
-            "baselineMemoryMb": _format_number(row[full_idx] if len(row) > full_idx else None),
-            "methodMemoryMb": _format_number(row[head_idx] if len(row) > head_idx else None),
-            "source": str(csv_path),
-        }
-
-    return {"baselineMemoryMb": None, "methodMemoryMb": None, "source": str(csv_path)}
-
-
-def _project3_comparison_model_name(model: str) -> str:
-    return PROJECT3_COMPARISON_MODEL_ALIASES.get(model, model)
+    metrics_map = PROJECT3_ASCEND_ASCEND_BASELINE_METRICS if scenario == PROJECT3_SCENARIO_ASCEND_ASCEND else PROJECT3_BASELINE_METRICS
+    baseline = metrics_map.get(model) or {}
+    source = "内置双昇腾全本地 baseline 表" if scenario == PROJECT3_SCENARIO_ASCEND_ASCEND else "内置双飞腾全本地 baseline 表"
+    return {"baselineMemoryMb": _format_number(baseline.get("memoryMb")), "methodMemoryMb": None, "source": source}
 
 
 def _format_project3_ratio(value: Any) -> Any:
@@ -994,41 +1009,6 @@ def _format_project3_ratio(value: Any) -> Any:
     if abs(num) <= 1:
         num *= 100
     return _format_number(num)
-
-
-def _parse_project3_1v2_baseline(model: str) -> dict[str, Any]:
-    path = PROJECT3_1V2_BASELINE_PATH
-    if not path.exists():
-        return {"source": str(path)}
-
-    workbook = _get_load_workbook()(path, data_only=True)
-    worksheet = workbook.active
-    target_model = _project3_comparison_model_name(model)
-    metrics: dict[str, Any] = {"source": str(path)}
-    current_model = None
-
-    for row in worksheet.iter_rows(min_row=5, values_only=True):
-        if row and row[0] not in (None, ""):
-            current_model = str(row[0]).strip()
-        if current_model != target_model:
-            continue
-
-        device_label = str(row[1]).strip() if len(row) > 1 and row[1] is not None else ""
-        if device_label == "飞腾":
-            metrics["feitengBaselineLatencyMs"] = _format_number(row[7] if len(row) > 7 else None)
-            metrics["feitengOursLatencyMs"] = _format_number(row[6] if len(row) > 6 else None)
-        elif device_label == "昇腾":
-            metrics["ascendBaselineLatencyMs"] = _format_number(row[7] if len(row) > 7 else None)
-            metrics["ascendOursLatencyMs"] = _format_number(row[6] if len(row) > 6 else None)
-
-        if "baselineMemoryMb" not in metrics and len(row) > 10 and row[10] not in (None, ""):
-            metrics["baselineMemoryMb"] = _format_number(row[10])
-        if "oursMemoryMb" not in metrics and len(row) > 13 and row[13] not in (None, ""):
-            metrics["oursMemoryMb"] = _format_number(row[13])
-        if "memoryImprovement" not in metrics and len(row) > 14 and row[14] not in (None, ""):
-            metrics["memoryImprovement"] = _format_project3_ratio(row[14])
-
-    return metrics
 
 
 def _extract_metric(text: str, name: str) -> Any:
@@ -1046,123 +1026,6 @@ def _extract_metric(text: str, name: str) -> Any:
     return None
 
 
-def _project3_pss_paths(model: str) -> dict[str, str]:
-    safe_model = "".join(ch if ch.isalnum() or ch in "_.-" else "_" for ch in model)
-    return {
-        "csv": f"{PROJECT3_WORKDIR}/server_pss_{safe_model}.csv",
-        "pid": f"{PROJECT3_WORKDIR}/server_pss_{safe_model}.monitor.pid",
-        "stop": f"{PROJECT3_WORKDIR}/server_pss_{safe_model}.stop",
-        "stdout": f"{PROJECT3_WORKDIR}/server_pss_{safe_model}.worker.log",
-    }
-
-
-def _start_project3_pss_monitor(task: dict[str, Any], model: str, port: int) -> dict[str, str] | None:
-    paths = _project3_pss_paths(model)
-    sed_expr = f"s/.*:{int(port)}.*pid=\\([0-9]*\\).*/\\1/p"
-    worker_script = r'''
-while true; do
-  if [ -f "$STOP_FILE" ]; then
-    echo "[PSSWorker] stop file detected: $STOP_FILE"
-    exit 0
-  fi
-  if ! kill -0 "$SERVER_PID" 2>/dev/null; then
-    echo "[PSSWorker] server process exited: $SERVER_PID"
-    exit 0
-  fi
-  TS=$(date +%s)
-  TIME_STR=$(date "+%Y-%m-%dT%H:%M:%S%z")
-  if [ -r "/proc/$SERVER_PID/smaps_rollup" ]; then
-    PSS_KB=$(awk '/^Pss:/ {print $2; exit}' "/proc/$SERVER_PID/smaps_rollup")
-    RSS_KB=$(awk '/^Rss:/ {print $2; exit}' "/proc/$SERVER_PID/smaps_rollup")
-  elif [ -r "/proc/$SERVER_PID/smaps" ]; then
-    PSS_KB=$(awk '/^Pss:/ {sum += $2} END {print sum + 0}' "/proc/$SERVER_PID/smaps")
-    RSS_KB=$(awk '/^Rss:/ {sum += $2} END {print sum + 0}' "/proc/$SERVER_PID/smaps")
-  else
-    echo "[PSSWorker] cannot read smaps for pid=$SERVER_PID"
-    exit 1
-  fi
-  PSS_MB=$(awk -v kb="$PSS_KB" 'BEGIN {printf "%.3f", kb / 1024}')
-  RSS_MB=$(awk -v kb="$RSS_KB" 'BEGIN {printf "%.3f", kb / 1024}')
-  echo "$TS,$TIME_STR,$SERVER_PID,$PSS_KB,$RSS_KB,$PSS_MB,$RSS_MB" >> "$LOG_FILE"
-  sleep "$INTERVAL"
-done
-'''.strip()
-    remote_cmd = (
-        f"cd {shlex.quote(PROJECT3_WORKDIR)} && "
-        f"SERVER_PID=$(ss -lntp | sed -n {shlex.quote(sed_expr)} | head -n1); "
-        "if test -z \"$SERVER_PID\"; then echo 'PSS_MONITOR_NO_SERVER_PID'; exit 1; fi; "
-        f"rm -f {shlex.quote(paths['stop'])}; "
-        f"printf 'timestamp,datetime,pid,pss_kb,rss_kb,pss_mb,rss_mb\\n' > {shlex.quote(paths['csv'])}; "
-        f"SERVER_PID=\"$SERVER_PID\" INTERVAL={shlex.quote(str(PROJECT3_PSS_INTERVAL))} "
-        f"LOG_FILE={shlex.quote(paths['csv'])} STOP_FILE={shlex.quote(paths['stop'])} "
-        f"nohup bash -lc {shlex.quote(worker_script)} > {shlex.quote(paths['stdout'])} 2>&1 & "
-        f"echo $! > {shlex.quote(paths['pid'])}; "
-        f"MONITOR_PID=$(cat {shlex.quote(paths['pid'])}); "
-        f"echo PSS_MONITOR_STARTED server_pid=$SERVER_PID monitor_pid=$MONITOR_PID log={shlex.quote(paths['csv'])}"
-    )
-    completed = subprocess.run(
-        _build_ssh_command_for(PROJECT3_ASCEND_SERVER_HOST, remote_cmd, PROJECT3_SSH_PASSWORD),
-        capture_output=True,
-        text=True,
-        timeout=30,
-    )
-    if completed.returncode != 0:
-        _append_log(task, f"PSS 监控启动失败: {completed.stderr.strip() or completed.stdout.strip()}", "error")
-        return None
-    _append_log(task, completed.stdout.strip() or f"PSS 监控已启动: {paths['csv']}", "info")
-    return paths
-
-
-def _parse_project3_pss_csv(text: str) -> dict[str, Any]:
-    rows = []
-    reader = csv.DictReader(line for line in (text or "").splitlines() if line.strip())
-    for row in reader:
-        try:
-            rows.append({"pssMb": float(row.get("pss_mb") or 0), "rssMb": float(row.get("rss_mb") or 0)})
-        except (TypeError, ValueError):
-            continue
-    if not rows:
-        return {"sampleCount": 0, "pssPeakMb": None, "pssAvgMb": None, "rssPeakMb": None, "rssAvgMb": None}
-    return {
-        "sampleCount": len(rows),
-        "pssPeakMb": _format_number(max(row["pssMb"] for row in rows)),
-        "pssAvgMb": _format_number(sum(row["pssMb"] for row in rows) / len(rows)),
-        "rssPeakMb": _format_number(max(row["rssMb"] for row in rows)),
-        "rssAvgMb": _format_number(sum(row["rssMb"] for row in rows) / len(rows)),
-    }
-
-
-def _stop_project3_pss_monitor(task: dict[str, Any], paths: dict[str, str] | None) -> dict[str, Any]:
-    if not paths:
-        return {"sampleCount": 0, "pssPeakMb": None, "pssAvgMb": None, "rssPeakMb": None, "rssAvgMb": None}
-    remote_cmd = (
-        f"touch {shlex.quote(paths['stop'])}; sleep 1; "
-        f"if test -f {shlex.quote(paths['pid'])}; then "
-        f"MONITOR_PID=$(cat {shlex.quote(paths['pid'])} | tr -d '[:space:]'); "
-        "if test -n \"$MONITOR_PID\" && kill -0 \"$MONITOR_PID\" 2>/dev/null; then kill \"$MONITOR_PID\" || true; fi; "
-        "fi; "
-        "printf '__PSS_CSV_BEGIN__\\n'; "
-        f"cat {shlex.quote(paths['csv'])} 2>/dev/null || true; "
-        "printf '__PSS_CSV_END__\\n'"
-    )
-    completed = subprocess.run(
-        _build_ssh_command_for(PROJECT3_ASCEND_SERVER_HOST, remote_cmd, PROJECT3_SSH_PASSWORD),
-        capture_output=True,
-        text=True,
-        timeout=30,
-    )
-    if completed.returncode != 0:
-        _append_log(task, f"PSS 监控停止/读取失败: {completed.stderr.strip() or completed.stdout.strip()}", "error")
-        return {"sampleCount": 0, "pssPeakMb": None, "pssAvgMb": None, "rssPeakMb": None, "rssAvgMb": None}
-    output = completed.stdout or ""
-    start = output.find("__PSS_CSV_BEGIN__")
-    end = output.find("__PSS_CSV_END__")
-    csv_text = output[start + len("__PSS_CSV_BEGIN__"):end].strip() if start >= 0 and end >= 0 else output
-    metrics = _parse_project3_pss_csv(csv_text)
-    _append_log(task, f"PSS 采样完成: samples={metrics['sampleCount']} pss_peak={metrics['pssPeakMb']}MB rss_peak={metrics['rssPeakMb']}MB", "info")
-    return metrics
-
-
 def _terminate_process(process: subprocess.Popen | None) -> None:
     if not process or process.poll() is not None:
         return
@@ -1177,6 +1040,7 @@ def _wait_for_project3_server_port(
     task: dict[str, Any],
     port: int,
     server_process: subprocess.Popen | None = None,
+    server_lines: list[str] | None = None,
     timeout_sec: int | None = None,
 ) -> bool:
     timeout_sec = timeout_sec or PROJECT3_SERVER_READY_TIMEOUT
@@ -1188,13 +1052,17 @@ def _wait_for_project3_server_port(
         if server_process is not None and server_process.poll() is not None:
             return False
         completed = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
-        if completed.returncode == 0:
+        has_current_server_ready_log = server_lines is None or any(
+            "Listening" in line and f":{int(port)}" in line for line in server_lines
+        )
+        if completed.returncode == 0 and has_current_server_ready_log:
             return True
         if time.time() >= next_log_at:
             remaining = max(0, int(deadline - time.time()))
+            ready_reason = "端口未监听" if completed.returncode != 0 else "等待本次 server Listening 日志"
             _append_log(
                 task,
-                f"server 仍在启动，继续等待端口 {port}，剩余 {remaining}s；首次运行可能正在导出 ONNX 缓存",
+                f"server 仍在启动，继续等待端口 {port}，剩余 {remaining}s；{ready_reason}；首次运行可能正在导出 ONNX 缓存",
                 "info",
             )
             next_log_at = time.time() + 10
@@ -1203,24 +1071,52 @@ def _wait_for_project3_server_port(
 
 
 def _cleanup_project3_server_port(port: int) -> None:
-    remote_cmd = (
-        "pkill -TERM -f server_cpu_extreme_compute_torch_shared.py || true; "
-        "sleep 1; "
-        "pkill -KILL -f server_cpu_extreme_compute_torch_shared.py || true; "
-        "pkill -TERM -f 'Ascend/.*/bin/atc' || true; "
-        "pkill -TERM -f 'Ascend/.*/bin/atc.bin' || true; "
-        "pkill -TERM -f ' ccec ' || true; "
-        "pid=$(ss -lntp | sed -n "
-        + shlex.quote(f"s/.*:{int(port)}.*pid=\\([0-9]*\\).*/\\1/p")
-        + " | head -n1); "
-        "if test -n \"$pid\"; then kill \"$pid\" || true; fi"
-    )
+    port_value = int(port)
+    remote_cmd = f'''
+port={port_value}
+collect_pids() {{
+  {{ ss -lntp "sport = :$port" 2>/dev/null | sed -n 's/.*pid=\([0-9][0-9]*\).*/\1/p'; }} || true
+  {{ command -v lsof >/dev/null 2>&1 && lsof -tiTCP:"$port" -sTCP:LISTEN 2>/dev/null; }} || true
+  {{ command -v fuser >/dev/null 2>&1 && fuser -n tcp "$port" 2>/dev/null; }} || true
+}}
+pkill -TERM -f 'Ascend/.*/bin/atc' || true
+pkill -TERM -f 'Ascend/.*/bin/atc.bin' || true
+pkill -TERM -f ' ccec ' || true
+pkill -TERM -f {shlex.quote(f'{PROJECT3_SERVER_SCRIPT}.*--port {port_value}')} || true
+for attempt in 1 2 3 4 5; do
+  pids=$(collect_pids | tr ' ' '\n' | sed '/^$/d' | sort -u)
+  if [ -z "$pids" ]; then
+    exit 0
+  fi
+  for pid in $pids; do kill -TERM "$pid" 2>/dev/null || true; done
+  sleep 1
+done
+pids=$(collect_pids | tr ' ' '\n' | sed '/^$/d' | sort -u)
+for pid in $pids; do kill -KILL "$pid" 2>/dev/null || true; done
+sleep 1
+pids=$(collect_pids | tr ' ' '\n' | sed '/^$/d' | sort -u)
+if [ -n "$pids" ]; then
+  echo "port $port still occupied by: $pids" >&2
+  exit 1
+fi
+'''.strip()
     subprocess.run(
         _build_ssh_command_for(PROJECT3_ASCEND_SERVER_HOST, remote_cmd, PROJECT3_SSH_PASSWORD),
         capture_output=True,
         text=True,
         timeout=30,
     )
+
+
+def _project3_server_port_in_use(port: int) -> bool:
+    remote_cmd = f"ss -lnt 'sport = :{int(port)}' 2>/dev/null | grep -q ':{int(port)} '"
+    completed = subprocess.run(
+        _build_ssh_command_for(PROJECT3_ASCEND_SERVER_HOST, remote_cmd, PROJECT3_SSH_PASSWORD),
+        capture_output=True,
+        text=True,
+        timeout=15,
+    )
+    return completed.returncode == 0
 
 
 def _start_logged_process(
@@ -1288,9 +1184,13 @@ def _project3_client_command_for(
     device_key: str,
     tasks: int,
     port: int,
+    model: str,
+    host: str | None = None,
+    password: str | None = None,
 ) -> tuple[list[str], str | None]:
+    python_bin = PROJECT3_ASCEND_PYTHON if client_type.startswith("ascend") else PROJECT3_FEITENG_PYTHON
     command = [
-        PROJECT3_ASCEND_PYTHON if client_type == "ascend" else PROJECT3_FEITENG_PYTHON,
+        python_bin,
         "-u",
         PROJECT3_CLIENT_SCRIPT,
         "--server-ip",
@@ -1307,13 +1207,53 @@ def _project3_client_command_for(
         str(PROJECT3_EXCLUDE_FIRST),
     ]
     command.append("--force-cpu")
-    if client_type == "ascend":
-        # ATC is disabled for project 3. Keep the Ascend client on CPU ONNXRuntime
-        # and avoid sourcing Ascend toolkit so it cannot compile head.onnx -> head.om.
-        env_prefix = ""
-        remote = f"cd {shlex.quote(PROJECT3_WORKDIR)} && {env_prefix}{' '.join(shlex.quote(part) for part in command)}"
-        return _build_ssh_command_for(PROJECT3_ASCEND_CLIENT_HOST, remote, PROJECT3_SSH_PASSWORD), None
-    return command, PROJECT3_WORKDIR
+    safe_model = "".join(ch if ch.isalnum() or ch in "_.-" else "_" for ch in model)
+    safe_client_type = "".join(ch if ch.isalnum() or ch in "_.-" else "_" for ch in client_type)
+    pss_csv = f"{PROJECT3_WORKDIR}/client_pss_{safe_model}_{safe_client_type}_{device_key}.csv"
+    client_cmd = " ".join(shlex.quote(part) for part in command)
+    wrapper = f'''
+cd {shlex.quote(PROJECT3_WORKDIR)}
+rm -f {shlex.quote(pss_csv)}
+printf 'timestamp,datetime,pid,pss_kb,rss_kb,pss_mb,rss_mb\n' > {shlex.quote(pss_csv)}
+({client_cmd}) &
+CLIENT_PID=$!
+(
+  while kill -0 "$CLIENT_PID" 2>/dev/null; do
+    TS=$(date +%s)
+    TIME_STR=$(date "+%Y-%m-%dT%H:%M:%S%z")
+    if [ -r "/proc/$CLIENT_PID/smaps_rollup" ]; then
+      PSS_KB=$(awk '/^Pss:/ {{print $2; exit}}' "/proc/$CLIENT_PID/smaps_rollup")
+      RSS_KB=$(awk '/^Rss:/ {{print $2; exit}}' "/proc/$CLIENT_PID/smaps_rollup")
+    elif [ -r "/proc/$CLIENT_PID/smaps" ]; then
+      PSS_KB=$(awk '/^Pss:/ {{sum += $2}} END {{print sum + 0}}' "/proc/$CLIENT_PID/smaps")
+      RSS_KB=$(awk '/^Rss:/ {{sum += $2}} END {{print sum + 0}}' "/proc/$CLIENT_PID/smaps")
+    else
+      sleep {shlex.quote(str(PROJECT3_PSS_INTERVAL))}
+      continue
+    fi
+    PSS_MB=$(awk -v kb="$PSS_KB" 'BEGIN {{printf "%.3f", kb / 1024}}')
+    RSS_MB=$(awk -v kb="$RSS_KB" 'BEGIN {{printf "%.3f", kb / 1024}}')
+    echo "$TS,$TIME_STR,$CLIENT_PID,$PSS_KB,$RSS_KB,$PSS_MB,$RSS_MB" >> {shlex.quote(pss_csv)}
+    sleep {shlex.quote(str(PROJECT3_PSS_INTERVAL))}
+  done
+) &
+MONITOR_PID=$!
+wait "$CLIENT_PID"
+CLIENT_CODE=$?
+kill "$MONITOR_PID" 2>/dev/null || true
+PSS_AVG=$(awk -F, 'NR>1 {{sum += $6; count++}} END {{if (count) printf "%.3f", sum / count; else printf ""}}' {shlex.quote(pss_csv)})
+PSS_PEAK=$(awk -F, 'NR>1 {{if ($6 > max) max = $6; count++}} END {{if (count) printf "%.3f", max; else printf ""}}' {shlex.quote(pss_csv)})
+PSS_COUNT=$(awk -F, 'NR>1 {{count++}} END {{print count + 0}}' {shlex.quote(pss_csv)})
+echo CLIENT_PSS_AVG_MB=$PSS_AVG
+echo CLIENT_PSS_PEAK_MB=$PSS_PEAK
+echo CLIENT_PSS_SAMPLES=$PSS_COUNT
+exit "$CLIENT_CODE"
+'''.strip()
+    if client_type in ("ft-remote", "ascend-remote"):
+        remote_host = host or (PROJECT3_REMOTE_FEITENG_CLIENT_HOST if client_type == "ft-remote" else PROJECT3_ASCEND_CLIENT1_HOST)
+        remote_password = password or (PROJECT3_FEITENG_SSH_PASSWORD if client_type == "ft-remote" else PROJECT3_SSH_PASSWORD)
+        return _build_ssh_command_for(remote_host, wrapper, remote_password), None
+    return ["bash", "-lc", wrapper], None
 
 
 def _project3_client_commands(scenario: str, model: str, tasks: int, port: int) -> list[tuple[str, list[str], str | None]]:
@@ -1321,23 +1261,28 @@ def _project3_client_commands(scenario: str, model: str, tasks: int, port: int) 
     clients = config.get("clients") or []
     commands: list[tuple[str, list[str], str | None]] = []
     for index, client in enumerate(clients, start=1):
-        client_type = str(client.get("type") or _project3_client_profile(scenario))
+        client_type = str(client.get("type") or "ft-local")
         device_key = str(client.get("device_key") or config["deviceKey"])
-        cmd, workdir = _project3_client_command_for(client_type, device_key, tasks, port)
-        commands.append((f"client{index}:{client_type}:{device_key}", cmd, workdir))
+        ip = str(client.get("ip") or "")
+        host = str(client.get("host") or "") or None
+        password = PROJECT3_FEITENG_SSH_PASSWORD if client_type == "ft-remote" else PROJECT3_SSH_PASSWORD
+        cmd, workdir = _project3_client_command_for(client_type, device_key, tasks, port, model, host, password)
+        commands.append((f"client{index}:{client_type}:{device_key}:{ip}", cmd, workdir))
     if commands:
         return commands
-    client_type = "ascend" if scenario == "ascend_ascend" else "ft"
-    cmd, workdir = _project3_client_command_for(client_type, config["deviceKey"], tasks, port)
-    return [(f"client1:{client_type}:{config['deviceKey']}", cmd, workdir)]
+    return []
 
 
-def _sync_project3_file_to_host(task: dict[str, Any], host: str, filename: str) -> None:
+def _sync_project3_file_to_host(task: dict[str, Any], host: str, filename: str, password: str | None = None) -> None:
     local_path = Path(PROJECT3_WORKDIR) / filename
     remote_path = f"{PROJECT3_WORKDIR}/{filename}"
     if not local_path.exists():
         raise RuntimeError(f"课题三本地脚本不存在，无法同步: {local_path}")
-    cmd = _build_scp_upload_command_for(str(local_path), host, remote_path, PROJECT3_SSH_PASSWORD)
+    mkdir_cmd = _build_ssh_command_for(host, f"mkdir -p {shlex.quote(PROJECT3_WORKDIR)}", password or PROJECT3_SSH_PASSWORD)
+    completed = subprocess.run(mkdir_cmd, capture_output=True, text=True, timeout=30)
+    if completed.returncode != 0:
+        raise RuntimeError(f"创建远程目录失败 {host}: {completed.stderr.strip() or completed.stdout.strip()}")
+    cmd = _build_scp_upload_command_for(str(local_path), host, remote_path, password or PROJECT3_SSH_PASSWORD)
     completed = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
     if completed.returncode != 0:
         raise RuntimeError(
@@ -1346,10 +1291,48 @@ def _sync_project3_file_to_host(task: dict[str, Any], host: str, filename: str) 
     _append_log(task, f"已同步课题三脚本到 {host}: {filename}", "info")
 
 
+def _sync_project3_dir_to_host(task: dict[str, Any], host: str, dirname: str, password: str | None = None) -> None:
+    local_path = _project3_cut_source_dir(dirname) if dirname in ("cut_json_ff", "cut_json_ss") else Path(PROJECT3_WORKDIR) / dirname
+    if not local_path.exists() or not local_path.is_dir():
+        raise RuntimeError(f"课题三本地目录不存在，无法同步: {local_path}")
+    mkdir_cmd = _build_ssh_command_for(host, f"mkdir -p {shlex.quote(PROJECT3_WORKDIR)}", password or PROJECT3_SSH_PASSWORD)
+    completed = subprocess.run(mkdir_cmd, capture_output=True, text=True, timeout=30)
+    if completed.returncode != 0:
+        raise RuntimeError(f"创建远程目录失败 {host}: {completed.stderr.strip() or completed.stdout.strip()}")
+    remote_path = f"{host}:{PROJECT3_WORKDIR}/"
+    scp_cmd = ["scp", "-r", *SSH_BASE_OPTS, str(local_path), remote_path]
+    if _has_sshpass():
+        scp_cmd = ["sshpass", "-p", password or PROJECT3_SSH_PASSWORD, *scp_cmd]
+    completed = subprocess.run(scp_cmd, capture_output=True, text=True, timeout=300)
+    if completed.returncode != 0:
+        raise RuntimeError(f"同步课题三目录到 {host} 失败: {completed.stderr.strip() or completed.stdout.strip()}")
+    _append_log(task, f"已同步课题三目录到 {host}: {dirname}", "info")
+
+
+def _sync_project3_local_cut_json(task: dict[str, Any], dirname: str) -> None:
+    source_dir = _project3_cut_source_dir(dirname)
+    if not source_dir.exists() or not source_dir.is_dir():
+        raise RuntimeError(f"{dirname} 源目录不存在: {source_dir}")
+    target = Path(PROJECT3_WORKDIR) / dirname
+    target.parent.mkdir(parents=True, exist_ok=True)
+    if target.exists():
+        shutil.rmtree(target)
+    shutil.copytree(source_dir, target)
+    _append_log(task, f"已同步 {dirname} 到本机运行目录: {target}", "info")
+
+
 def _sync_project3_runtime_scripts(task: dict[str, Any], scenario: str) -> None:
-    _sync_project3_file_to_host(task, PROJECT3_ASCEND_SERVER_HOST, PROJECT3_SERVER_SCRIPT)
-    if scenario in ("ascend_ascend", "ascend_mixed"):
-        _sync_project3_file_to_host(task, PROJECT3_ASCEND_CLIENT_HOST, PROJECT3_CLIENT_SCRIPT)
+    cut_dir = _project3_scenario_cut_dir(scenario)
+    _sync_project3_local_cut_json(task, cut_dir)
+    _sync_project3_file_to_host(task, PROJECT3_ASCEND_SERVER_HOST, PROJECT3_SERVER_SCRIPT, PROJECT3_SSH_PASSWORD)
+    _sync_project3_dir_to_host(task, PROJECT3_ASCEND_SERVER_HOST, cut_dir, PROJECT3_SSH_PASSWORD)
+    if scenario == PROJECT3_SCENARIO_ASCEND_ASCEND:
+        for host in (PROJECT3_ASCEND_CLIENT1_HOST, PROJECT3_ASCEND_CLIENT2_HOST):
+            _sync_project3_file_to_host(task, host, PROJECT3_CLIENT_SCRIPT, PROJECT3_SSH_PASSWORD)
+            _sync_project3_dir_to_host(task, host, cut_dir, PROJECT3_SSH_PASSWORD)
+    else:
+        _sync_project3_file_to_host(task, PROJECT3_REMOTE_FEITENG_CLIENT_HOST, PROJECT3_CLIENT_SCRIPT, PROJECT3_FEITENG_SSH_PASSWORD)
+        _sync_project3_dir_to_host(task, PROJECT3_REMOTE_FEITENG_CLIENT_HOST, cut_dir, PROJECT3_FEITENG_SSH_PASSWORD)
 
 
 def _project3_improvement(baseline_value: Any, ours_value: Any) -> Any:
@@ -1363,61 +1346,6 @@ def _project3_improvement(baseline_value: Any, ours_value: Any) -> Any:
     return _format_number((baseline_num - ours_num) / baseline_num * 100)
 
 
-def _project3_tail_memory(memory_metrics: dict[str, Any], baseline: dict[str, Any]) -> Any:
-    baseline_memory = memory_metrics.get("baselineMemoryMb") or baseline.get("memoryMb")
-    head_memory = memory_metrics.get("methodMemoryMb")
-    try:
-        return max(0.0, float(baseline_memory) - float(head_memory))
-    except (TypeError, ValueError):
-        return None
-
-
-def _project3_memory_saving(memory_metrics: dict[str, Any], baseline: dict[str, Any]) -> dict[str, Any]:
-    baseline_memory = memory_metrics.get("baselineMemoryMb") or baseline.get("memoryMb")
-    head_memory = memory_metrics.get("methodMemoryMb")
-    try:
-        baseline_num = float(baseline_memory)
-        head_num = float(head_memory)
-    except (TypeError, ValueError):
-        return {"baselineMb": baseline_memory, "headMb": head_memory, "savedMb": None, "savedRatio": None}
-    if baseline_num <= 0:
-        return {"baselineMb": _format_number(baseline_num), "headMb": _format_number(head_num), "savedMb": None, "savedRatio": None}
-    saved = baseline_num - head_num
-    return {
-        "baselineMb": _format_number(baseline_num),
-        "headMb": _format_number(head_num),
-        "savedMb": _format_number(saved),
-        "savedRatio": _format_number(saved / baseline_num * 100),
-    }
-
-
-def _project3_mixed_memory_saving(model: str) -> dict[str, Any]:
-    ascend_baseline = _parse_project3_baseline(model, "ascend_ascend")
-    feiteng_baseline = _parse_project3_baseline(model, "ascend_feiteng")
-    ascend_memory = _parse_project3_memory_metrics(model, "ascend_ascend")
-    feiteng_memory = _parse_project3_memory_metrics(model, "ascend_feiteng")
-    ascend_full = ascend_memory.get("baselineMemoryMb") or ascend_baseline.get("memoryMb")
-    feiteng_full = feiteng_memory.get("baselineMemoryMb") or feiteng_baseline.get("memoryMb")
-    ascend_head = ascend_memory.get("methodMemoryMb")
-    feiteng_head = feiteng_memory.get("methodMemoryMb")
-    ascend_tail = _project3_tail_memory(ascend_memory, ascend_baseline)
-    feiteng_tail = _project3_tail_memory(feiteng_memory, feiteng_baseline)
-    source = f"{ascend_memory.get('source')} + {feiteng_memory.get('source')}"
-    if any(item is None for item in (ascend_full, feiteng_full, ascend_head, feiteng_head, ascend_tail, feiteng_tail)):
-        return {"savedMb": None, "savedRatio": None, "source": source}
-    try:
-        baseline_total = float(ascend_full) + float(feiteng_full)
-        ours_total = float(ascend_head) + float(feiteng_head) + max(float(ascend_tail), float(feiteng_tail))
-    except (TypeError, ValueError):
-        return {"savedMb": None, "savedRatio": None, "source": source}
-    saved = baseline_total - ours_total
-    return {
-        "savedMb": _format_number(saved),
-        "savedRatio": _format_number(saved / baseline_total * 100) if baseline_total > 0 else None,
-        "source": source,
-    }
-
-
 def _project3_result_row(
     scenario: str,
     scenario_label: str,
@@ -1428,51 +1356,24 @@ def _project3_result_row(
     client_latencies: dict[str, Any] | None = None,
     pss_metrics: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    del baseline, memory_metrics
-    baseline_1v2 = _parse_project3_1v2_baseline(model)
     pss_metrics = pss_metrics or {}
-    if scenario == "ascend_mixed":
-        client_latencies = client_latencies or {}
-        feiteng_latency = client_latencies.get("ft") or baseline_1v2.get("feitengOursLatencyMs")
-        ascend_latency = client_latencies.get("ascend") or baseline_1v2.get("ascendOursLatencyMs")
-        baseline_memory = baseline_1v2.get("baselineMemoryMb")
-        ours_memory = pss_metrics.get("pssPeakMb") or baseline_1v2.get("oursMemoryMb")
-        return {
-            "场景": scenario_label,
-            "模型": model,
-            "飞腾baseline延迟(ms)": baseline_1v2.get("feitengBaselineLatencyMs"),
-            "飞腾ours延迟(ms)": feiteng_latency,
-            "飞腾延迟提升(%)": _project3_improvement(baseline_1v2.get("feitengBaselineLatencyMs"), feiteng_latency),
-            "昇腾baseline延迟(ms)": baseline_1v2.get("ascendBaselineLatencyMs"),
-            "昇腾ours延迟(ms)": ascend_latency,
-            "昇腾延迟提升(%)": _project3_improvement(baseline_1v2.get("ascendBaselineLatencyMs"), ascend_latency),
-            "baseline内存峰值(MB)": baseline_memory,
-            "ours内存峰值(MB)": ours_memory,
-            "内存提升(%)": _project3_improvement(baseline_memory, ours_memory),
-        }
-
-    if scenario == "ascend_feiteng":
-        feiteng_latency = latency or baseline_1v2.get("feitengOursLatencyMs")
-        return {
-            "场景": scenario_label,
-            "模型": model,
-            "飞腾baseline延迟(ms)": baseline_1v2.get("feitengBaselineLatencyMs"),
-            "飞腾ours延迟(ms)": feiteng_latency,
-            "飞腾延迟提升(%)": _project3_improvement(baseline_1v2.get("feitengBaselineLatencyMs"), feiteng_latency),
-        }
-
-    ascend_latency = latency or baseline_1v2.get("ascendOursLatencyMs")
+    baseline_latency = baseline.get("latencyMs")
+    baseline_memory = memory_metrics.get("baselineMemoryMb") or baseline.get("memoryMb")
+    pss_peak_avg = pss_metrics.get("pssPeakAvgMb")
     return {
-        "场景": scenario_label,
-        "模型": model,
-        "昇腾baseline延迟(ms)": baseline_1v2.get("ascendBaselineLatencyMs"),
-        "昇腾ours延迟(ms)": ascend_latency,
-        "昇腾延迟提升(%)": _project3_improvement(baseline_1v2.get("ascendBaselineLatencyMs"), ascend_latency),
+        "baseline平均延迟(ms)": baseline_latency,
+        "模型分割后平均E2E(ms)": latency,
+        "任务完成时间性能提升(%)": _project3_improvement(baseline_latency, latency),
+        "baseline占用内存(MB)": baseline_memory,
+        "模型分割后占用内存(MB)": pss_peak_avg,
+        "内存资源节省比(%)": _project3_improvement(baseline_memory, pss_peak_avg),
+        "任务完成时间性能提升指标": "10%",
+        "内存资源节省比指标": "20%",
     }
 
 
 def _project3_row_has_required_metrics(row: dict[str, Any]) -> bool:
-    required_keys = [key for key in row if key not in ("场景", "模型", "错误")]
+    required_keys = [key for key in row if key in ("模型分割后平均E2E(ms)", "模型分割后占用内存(MB)")]
     return all(row.get(key) not in (None, "") for key in required_keys)
 
 
@@ -1490,7 +1391,6 @@ def _run_project3_model(
     client_processes: list[subprocess.Popen] = []
     client_outputs: list[tuple[str, list[str]]] = []
     server_lines: list[str] = []
-    pss_paths: dict[str, str] | None = None
     pss_metrics: dict[str, Any] | None = None
 
     try:
@@ -1513,17 +1413,21 @@ def _run_project3_model(
             "info",
         )
         _cleanup_project3_server_port(port)
+        if _project3_server_port_in_use(port):
+            _append_log(task, f"server 端口 {port} 仍被占用，重试清理", "info")
+            _cleanup_project3_server_port(port)
+        if _project3_server_port_in_use(port):
+            raise RuntimeError(f"server 端口仍被占用: {PROJECT3_ASCEND_SERVER_IP}:{port}")
         server_cmd = _project3_server_command(model, scenario, tasks, port)
         server_process, server_lines = _start_logged_process(task, f"server:{model}", server_cmd)
         task["process"] = server_process
 
         _append_log(task, f"等待 server 端口就绪: {PROJECT3_ASCEND_SERVER_IP}:{port}", "info")
-        if not _wait_for_project3_server_port(task, port, server_process):
+        if not _wait_for_project3_server_port(task, port, server_process, server_lines):
             if server_process.poll() is not None:
                 raise RuntimeError(f"server 启动失败，退出码 {server_process.returncode}")
             raise RuntimeError(f"server 端口未就绪: {PROJECT3_ASCEND_SERVER_IP}:{port}")
         _append_log(task, "server 端口已就绪", "success")
-        pss_paths = _start_project3_pss_monitor(task, model, port)
 
         for label, client_cmd, client_workdir in _project3_client_commands(scenario, model, tasks, port):
             client_process, client_lines = _start_logged_process(task, f"{label}:{model}", client_cmd, client_workdir)
@@ -1538,39 +1442,53 @@ def _run_project3_model(
             if client_code != 0:
                 failed_clients.append(f"{client_outputs[index][0]}={client_code}")
         if failed_clients:
-            _append_log(task, f"client 脚本退出码: {', '.join(failed_clients)}，缺失指标将从 1v2.xlsx 回填", "error")
+            _append_log(task, f"client 脚本退出码: {', '.join(failed_clients)}，缺失指标将保留为空", "error")
 
         try:
             server_process.wait(timeout=30)
         except subprocess.TimeoutExpired:
             _terminate_process(server_process)
+            _cleanup_project3_server_port(port)
         server_code = server_process.poll()
         if server_code not in (0, None):
             _append_log(task, f"server 脚本退出码 {server_code}", "error")
-        pss_metrics = _stop_project3_pss_monitor(task, pss_paths)
 
         latencies = []
         client_latencies: dict[str, Any] = {}
+        pss_peak_values = []
         for _label, lines in client_outputs:
             client_text = "\n".join(lines)
+            parts = _label.split(":")
+            client_type = parts[1] if len(parts) >= 2 else _label
+            client_metric_key = client_type
+            if client_type == "ascend-remote" and parts and parts[0].startswith("client"):
+                client_metric_key = f"{client_type}-{parts[0].replace('client', '')}"
             latency_item = _extract_metric(client_text, "avg_e2e_ms")
             if latency_item is None:
                 latency_item = _extract_metric(client_text, "e2e_ms")
             if latency_item is not None:
                 try:
                     latencies.append(float(latency_item))
-                    parts = _label.split(":")
-                    if len(parts) >= 2:
-                        client_latencies[parts[1]] = _format_number(float(latency_item))
+                    client_latencies[client_metric_key] = _format_number(float(latency_item))
+                except (TypeError, ValueError):
+                    pass
+            pss_item = _extract_metric(client_text, "CLIENT_PSS_PEAK_MB")
+            if pss_item is not None:
+                try:
+                    pss_num = float(pss_item)
+                    pss_peak_values.append(pss_num)
                 except (TypeError, ValueError):
                     pass
         latency = _format_number(sum(latencies) / len(latencies)) if latencies else None
+        pss_metrics = {
+            "pssPeakAvgMb": _format_number(sum(pss_peak_values) / len(pss_peak_values)) if pss_peak_values else None,
+        }
         return _project3_result_row(scenario, scenario_label, model, baseline, memory_metrics, latency, client_latencies, pss_metrics)
     except Exception as exc:
         for process in client_processes:
             _terminate_process(process)
         _terminate_process(server_process)
-        pss_metrics = _stop_project3_pss_monitor(task, pss_paths)
+        _cleanup_project3_server_port(port)
         row = _project3_result_row(scenario, scenario_label, model, baseline, memory_metrics, pss_metrics=pss_metrics)
         if not _project3_row_has_required_metrics(row):
             row["错误"] = str(exc)
@@ -1585,7 +1503,9 @@ def _run_project3_task(task_id: str) -> None:
         return
 
     payload = task["payload"]
-    scenario = payload["scenario"]
+    scenario = payload.get("scenario") or PROJECT3_SCENARIO
+    if scenario not in PROJECT3_SCENARIOS:
+        scenario = PROJECT3_SCENARIO
     raw_models = payload.get("models") or [payload.get("model") or "resnet50"]
     models = [_project3_model_name(item) for item in raw_models if item]
     if not models:
@@ -1682,6 +1602,8 @@ def _run_process(task_id: str) -> None:
                 payload["rounds"],
                 payload["models"],
             )
+            if payload["platform"] == "ascend":
+                _validate_topic1_ascend_runtime()
     except Exception as exc:
         with _lock:
             task = _tasks.get(task_id)
@@ -1736,16 +1658,37 @@ def _run_process(task_id: str) -> None:
             task["process"] = process
 
     assert process.stdout is not None
-    for line in iter(process.stdout.readline, ""):
+    start_time = time.time()
+    last_output_time = start_time
+    timed_out_message: str | None = None
+    while process.poll() is None:
+        ready, _, _ = select.select([process.stdout], [], [], 1)
+        if not ready:
+            now = time.time()
+            timed_out_message = _topic1_timeout_message(payload, int(now - last_output_time), int(now - start_time))
+            if timed_out_message:
+                _terminate_process(process)
+                break
+            continue
+
+        line = process.stdout.readline()
         if not line:
             break
+        last_output_time = time.time()
         with _lock:
             current = _tasks.get(task_id)
             if not current:
-                process.kill()
+                _terminate_process(process)
                 return
             output_lines.append(line.rstrip("\n"))
             _append_log(current, line.rstrip("\n"), "stdout")
+
+    for line in process.stdout.readlines():
+        output_lines.append(line.rstrip("\n"))
+        with _lock:
+            current = _tasks.get(task_id)
+            if current:
+                _append_log(current, line.rstrip("\n"), "stdout")
 
     return_code = process.wait()
     with _lock:
@@ -1753,9 +1696,15 @@ def _run_process(task_id: str) -> None:
         if not task:
             return
 
+        if timed_out_message:
+            task["status"] = "failed"
+            task["error"] = timed_out_message
+            _append_log(task, timed_out_message, "error")
+            return
+
         if return_code != 0:
             task["status"] = "failed"
-            task["error"] = f"脚本退出码 {return_code}"
+            task["error"] = _topic1_failure_message(payload, output_lines, return_code)
             _append_log(task, task["error"], "error")
             return
 

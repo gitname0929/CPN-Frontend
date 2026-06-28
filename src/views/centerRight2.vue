@@ -75,12 +75,71 @@ export default {
       }
       return `${numeric.toFixed(1)}%`;
     },
+    firstDefined(...values) {
+      return values.find((value) => value !== undefined && value !== null);
+    },
+    formatUsedTotal(used, total) {
+      if (used === undefined || used === null || total === undefined || total === null) {
+        return "";
+      }
+      return `${used} / ${total}`;
+    },
+    parseResourceSize(value) {
+      if (typeof value === "number") {
+        return Number.isFinite(value) ? value : NaN;
+      }
+      if (typeof value !== "string") {
+        return NaN;
+      }
+      const match = value.trim().match(/^([\d.]+)\s*([kmgtp]?i?b?)?/i);
+      if (!match) {
+        return NaN;
+      }
+      const numeric = Number(match[1]);
+      if (!Number.isFinite(numeric)) {
+        return NaN;
+      }
+      const unit = (match[2] || "").toLowerCase();
+      const multipliers = {
+        k: 1024,
+        kb: 1024,
+        ki: 1024,
+        kib: 1024,
+        m: 1024 ** 2,
+        mb: 1024 ** 2,
+        mi: 1024 ** 2,
+        mib: 1024 ** 2,
+        g: 1024 ** 3,
+        gb: 1024 ** 3,
+        gi: 1024 ** 3,
+        gib: 1024 ** 3,
+        t: 1024 ** 4,
+        tb: 1024 ** 4,
+        ti: 1024 ** 4,
+        tib: 1024 ** 4,
+        p: 1024 ** 5,
+        pb: 1024 ** 5,
+        pi: 1024 ** 5,
+        pib: 1024 ** 5,
+      };
+      return numeric * (multipliers[unit] || 1);
+    },
+    getUsagePercent(used, total, fallback) {
+      const usedValue = this.parseResourceSize(used);
+      const totalValue = this.parseResourceSize(total);
+      if (Number.isFinite(usedValue) && Number.isFinite(totalValue) && totalValue > 0) {
+        return (usedValue / totalValue) * 100;
+      }
+      return fallback;
+    },
     async updateClusterResource(selectCluster) {
       this.currentCluster = selectCluster;
       console.log("获取集群信息: ", selectCluster);
       try {
         const result = await getClusterResource(selectCluster);
         const clusterResourceData = result.data;
+        const storageUsed = this.firstDefined(clusterResourceData.storageUsed, clusterResourceData.usedStorage);
+        const storageTotal = this.firstDefined(clusterResourceData.storageTotal, clusterResourceData.maxStorage, clusterResourceData.totalStorage);
         this.metrics = [
           {
             name: "VCPU",
@@ -89,8 +148,8 @@ export default {
           },
           {
             name: "存储",
-            value: clusterResourceData.storageUsage,
-            amount: `${clusterResourceData.storageUsed || ""} / ${clusterResourceData.storageTotal || ""}`,
+            value: this.getUsagePercent(storageUsed, storageTotal, clusterResourceData.storageUsage),
+            amount: this.formatUsedTotal(storageUsed, storageTotal),
           },
           {
             name: "内存",

@@ -2,6 +2,7 @@
 """K3s cluster API server for big-screen dashboard."""
 import json
 import queue
+import shlex
 import subprocess
 import threading
 import time
@@ -10,7 +11,26 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
-from topic_tasks import cancel_task, get_task, start_task, subscribe_logs, unsubscribe_logs
+from topic_tasks import (
+    ASCEND_HOST,
+    ASCEND_SCRIPT,
+    ASCEND_SSH_PASSWORD,
+    PROJECT3_ASCEND_CLIENT1_HOST,
+    PROJECT3_CLIENT_SCRIPT,
+    PROJECT3_SSH_PASSWORD,
+    PROJECT3_WORKDIR,
+    PROJECT4_ASCEND_HOST,
+    PROJECT4_ASCEND_WORKDIR,
+    PROJECT4_SSH_PASSWORD,
+    PROJECT3_SCENARIO,
+    PROJECT3_SCENARIOS,
+    _build_ssh_command_for,
+    cancel_task,
+    get_task,
+    start_task,
+    subscribe_logs,
+    unsubscribe_logs,
+)
 
 KUBECONFIG = "/home/a/.kube/config"
 CACHE_TTL = 8
@@ -64,6 +84,33 @@ def run_kubectl(args):
     except Exception as e:
         print(f"[kubectl exception] {' '.join(cmd)}: {e}")
         return None
+
+
+def cleanup_ascend_179_environment():
+    """Best-effort cleanup for known task processes on 192.168.31.179."""
+    targets = [
+        shlex.quote(str(ASCEND_SCRIPT)),
+        shlex.quote(f"{PROJECT3_WORKDIR}/{PROJECT3_CLIENT_SCRIPT}"),
+        shlex.quote(f"{PROJECT4_ASCEND_WORKDIR}/orchestrator/our_scheduler_api.py"),
+    ]
+    remote_cmd = "\n".join(f"pkill -TERM -f {target} || true" for target in targets)
+    host = PROJECT4_ASCEND_HOST or PROJECT3_ASCEND_CLIENT1_HOST or ASCEND_HOST
+    password = PROJECT4_SSH_PASSWORD or PROJECT3_SSH_PASSWORD or ASCEND_SSH_PASSWORD
+    try:
+        completed = subprocess.run(
+            _build_ssh_command_for(host, remote_cmd, password),
+            capture_output=True,
+            text=True,
+            timeout=15,
+        )
+    except Exception as exc:
+        return {"host": host, "cleaned": False, "error": str(exc)}
+    output = (completed.stderr or completed.stdout or "").strip()
+    return {
+        "host": host,
+        "cleaned": completed.returncode == 0,
+        "error": output if completed.returncode != 0 else "",
+    }
 
 
 def get_nodes_json():
@@ -610,12 +657,17 @@ class APIHandler(BaseHTTPRequestHandler):
             _cache["pod_per_node"] = None
             _cache["pod_per_node_ts"] = 0
 
+        remote_cleanup = cleanup_ascend_179_environment()
         if failures:
             return self._send_json(
-                {"ret": 0, "msg": "部分 Deployment 缩容失败", "data": {"failures": failures, "results": results}},
+                {
+                    "ret": 0,
+                    "msg": "部分 Deployment 缩容失败",
+                    "data": {"failures": failures, "results": results, "remoteCleanup": remote_cleanup},
+                },
                 500,
             )
-        self._send_json({"ret": 1, "data": {"results": results}})
+        self._send_json({"ret": 1, "data": {"results": results, "remoteCleanup": remote_cleanup}})
 
     def _handle_task_stream(self, task_id):
         subscriber, current = subscribe_logs(task_id)
@@ -709,14 +761,14 @@ class APIHandler(BaseHTTPRequestHandler):
             return self._send_error("该课题运行配置暂未开放", 400)
 
         if topic_id == 3:
-            scenario = payload.get("scenario")
+            scenario = payload.get("scenario") or PROJECT3_SCENARIO
             models = payload.get("models") or []
             if not models and payload.get("model"):
                 models = [payload.get("model")]
             num_tasks = payload.get("numTasks") or 100
             port = payload.get("port") or 9999
 
-            if scenario not in ("ascend_ascend", "ascend_feiteng", "ascend_mixed"):
+            if scenario not in PROJECT3_SCENARIOS:
                 return self._send_error("请选择运行场景", 400)
             if not isinstance(models, list) or not models:
                 return self._send_error("请选择运行模型", 400)
